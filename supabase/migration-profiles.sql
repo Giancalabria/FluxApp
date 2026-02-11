@@ -75,12 +75,10 @@ CREATE TRIGGER on_auth_user_created
 
 
 -- ─── 3. Backfill profiles for existing users (run once if needed) ──────────
--- INSERT INTO public.profiles (user_id, username)
--- SELECT id, 'user_' || substr(replace(gen_random_uuid()::text, '-', ''), 1, 8)
--- FROM auth.users
--- WHERE id NOT IN (SELECT user_id FROM public.profiles)
--- ON CONFLICT (user_id) DO NOTHING;
-</think>
-Inlining the profile insert into handle_new_user, since trigger functions can't pass NEW to another function.
-<｜tool▁calls▁begin｜><｜tool▁call▁begin｜>
-StrReplace
+-- Uncomment and run in SQL Editor if you have users created before this migration:
+--
+INSERT INTO public.profiles (user_id, username)
+SELECT id, 'user_' || substr(replace(gen_random_uuid()::text, '-', ''), 1, 8)
+FROM auth.users
+WHERE id NOT IN (SELECT user_id FROM public.profiles)
+ON CONFLICT (user_id) DO NOTHING;
