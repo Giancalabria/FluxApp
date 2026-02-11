@@ -1,0 +1,46 @@
+/* ── MUI CssBaseline handles most resets; these are PWA / mobile-specific ── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  /* Remove the blue tap highlight on mobile webkit browsers */
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+  /* Prevent overscroll bounce on iOS (the "rubber band" effect) */
+  overscroll-behavior: none;
+}
+
+body {
+  /* Prevent pull-to-refresh in standalone PWA mode */
+  overscroll-behavior-y: contain;
+  /* Prevent text-size adjust on orientation change */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* ── Safe-area CSS variables (for notched phones: iPhone X+, Pixel, etc.) ── */
+:root {
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sat: env(safe-area-inset-top, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+}
+
+/* Prevent iOS zoom on input focus (font-size must be >= 16px) */
+input,
+select,
+textarea {
+  font-size: 16px !important;
+}
+
+/* Disable long-press context menu on images / links in PWA mode */
+@media (display-mode: standalone) {
+  img,
+  a {
+    -webkit-touch-callout: none;
+  }
+}
