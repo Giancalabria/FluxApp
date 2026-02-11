@@ -1,14 +1,23 @@
 /**
  * Format a number as currency.
  * @param {number} amount
- * @param {string} currency – ISO 4217 code (ARS, USD, …)
+ * @param {string} currency – ISO 4217 code (ARS, USD) or custom code (USDT, USDC, …)
  */
 export function formatCurrency(amount, currency = 'ARS') {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 2,
-  }).format(amount);
+  try {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 2,
+    }).format(amount);
+  } catch {
+    // Non-ISO codes (e.g. USDT, USDC) are not valid for Intl — format number + code
+    const formatted = Number(amount).toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+    return `${formatted} ${currency}`;
+  }
 }
 
 /**
