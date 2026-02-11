@@ -3,6 +3,7 @@ export const CURRENCIES = [
   { code: 'ARS', name: 'Argentine Peso', symbol: '$' },
   { code: 'USD', name: 'US Dollar', symbol: 'US$' },
   {code: 'USDT', name: 'Tether', symbol: 'USDT'},
+  {code: 'USDC', name: 'USD Coin', symbol: 'USDC'},
 ];
 
 // ─── Transaction types ──────────────────────────────────────────────────────
