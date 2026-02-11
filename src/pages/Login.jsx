@@ -123,21 +123,6 @@ export default function Login() {
             {isSignUp ? 'Create your account' : 'Sign in to your account'}
           </Typography>
 
-          <Collapse in={showInstallHint}>
-            <Alert
-              severity="info"
-              onClose={dismissInstallHint}
-              sx={{ mb: 2 }}
-              slotProps={{
-                closeButton: { 'aria-label': 'Dismiss' },
-              }}
-            >
-              <Typography variant="body2" component="span">
-                <strong>Use without the browser bar:</strong> Tap Chrome&apos;s menu (⋮) at the top right → &quot;Add to Home screen&quot; or &quot;Install app&quot;. Then open FluxApp from your home screen.
-              </Typography>
-            </Alert>
-          </Collapse>
-
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
               {error}
