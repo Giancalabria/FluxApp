@@ -56,8 +56,10 @@ export function useExchangeRates() {
   );
 
   /**
-   * Sum income and expense for the current month, converted to USD.
-   * transactions: array of { type, amount, date, account?: { currency } }
+   * Sum income and expense for the current month in USD.
+   * Uses stored amount_usd when present (rate at transaction time); otherwise
+   * falls back to current rate for older data that didn't have amount_usd.
+   * transactions: array of { type, amount, date, amount_usd?, account?: { currency } }
    */
   const monthTotalsUsd = useCallback(
     (transactions) => {
@@ -67,8 +69,13 @@ export function useExchangeRates() {
       let expense = 0;
       for (const t of transactions || []) {
         if (t.date < monthStart) continue;
-        const currency = t.account?.currency || 'ARS';
-        const usd = convertToUsd(Number(t.amount || 0), currency);
+        let usd = null;
+        if (t.amount_usd != null && Number.isFinite(Number(t.amount_usd))) {
+          usd = Number(t.amount_usd);
+        } else {
+          const currency = t.account?.currency || 'ARS';
+          usd = convertToUsd(Number(t.amount || 0), currency);
+        }
         if (usd == null) continue;
         if (t.type === 'income') income += usd;
         if (t.type === 'expense') expense += usd;

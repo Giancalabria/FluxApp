@@ -31,6 +31,7 @@ import { useAccounts } from '../hooks/useAccounts';
 import { useCategories } from '../hooks/useCategories';
 import { formatCurrency, formatDate } from '../lib/formatters';
 import { TRANSACTION_TYPES, TRANSACTION_TYPE_OPTIONS } from '../constants';
+import { exchangeRateService } from '../services/exchangeRateService';
 import TransactionFormDialog from '../components/transactions/TransactionFormDialog';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import EmptyState from '../components/common/EmptyState';
@@ -58,6 +59,20 @@ export default function Transactions() {
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const handleSave = async (values) => {
+    const account = accounts.find((a) => a.id === values.account_id);
+    if (account) {
+      try {
+        const { rate } = await exchangeRateService.getUsdArsRate();
+        const amountUsd = exchangeRateService.convertToUsd(
+          values.amount,
+          account.currency,
+          rate
+        );
+        if (amountUsd != null) values.amount_usd = Math.round(amountUsd * 10000) / 10000;
+      } catch {
+        // If rate fetch fails, leave amount_usd null; totals will fall back to current rate
+      }
+    }
     await createTransaction(values);
     setFormOpen(false);
   };
