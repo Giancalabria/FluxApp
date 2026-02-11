@@ -4,11 +4,13 @@ import DashboardIcon from '@mui/icons-material/DashboardRounded';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWalletRounded';
 import SwapHorizIcon from '@mui/icons-material/SwapHorizRounded';
 import BarChartIcon from '@mui/icons-material/BarChartRounded';
+import GroupIcon from '@mui/icons-material/GroupsRounded';
 
 const NAV_ITEMS = [
   { path: '/dashboard', label: 'Home', icon: <DashboardIcon /> },
   { path: '/accounts', label: 'Accounts', icon: <AccountBalanceWalletIcon /> },
   { path: '/transactions', label: 'Moves', icon: <SwapHorizIcon /> },
+  { path: '/activities', label: 'Split', icon: <GroupIcon /> },
   { path: '/reports', label: 'Reports', icon: <BarChartIcon /> },
 ];
 

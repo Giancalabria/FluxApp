@@ -3,7 +3,10 @@ import AppLayout from '../components/layout/AppLayout';
 import Dashboard from '../pages/Dashboard';
 import Accounts from '../pages/Accounts';
 import Transactions from '../pages/Transactions';
+import Activities from '../pages/Activities';
+import ActivityDetail from '../pages/ActivityDetail';
 import Reports from '../pages/Reports';
+import Settings from '../pages/Settings';
 import Login from '../pages/Login';
 import NotFound from '../pages/NotFound';
 import { useAuth } from '../context/AuthContext';
@@ -43,7 +46,10 @@ export default function AppRouter() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/accounts" element={<Accounts />} />
         <Route path="/transactions" element={<Transactions />} />
+        <Route path="/activities" element={<Activities />} />
+        <Route path="/activities/:id" element={<ActivityDetail />} />
         <Route path="/reports" element={<Reports />} />
+        <Route path="/settings" element={<Settings />} />
       </Route>
 
       {/*

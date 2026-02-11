@@ -12,6 +12,8 @@ import DashboardIcon from '@mui/icons-material/DashboardRounded';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWalletRounded';
 import SwapHorizIcon from '@mui/icons-material/SwapHorizRounded';
 import BarChartIcon from '@mui/icons-material/BarChartRounded';
+import GroupIcon from '@mui/icons-material/GroupsRounded';
+import SettingsIcon from '@mui/icons-material/SettingsRounded';
 import LogoutIcon from '@mui/icons-material/LogoutRounded';
 import { useAuth } from '../../context/AuthContext';
 
@@ -19,7 +21,9 @@ const NAV_ITEMS = [
   { path: '/dashboard', label: 'Dashboard', icon: <DashboardIcon /> },
   { path: '/accounts', label: 'Accounts', icon: <AccountBalanceWalletIcon /> },
   { path: '/transactions', label: 'Transactions', icon: <SwapHorizIcon /> },
+  { path: '/activities', label: 'Split', icon: <GroupIcon /> },
   { path: '/reports', label: 'Reports', icon: <BarChartIcon /> },
+  { path: '/settings', label: 'Settings', icon: <SettingsIcon /> },
 ];
 
 export default function Sidebar({ onClose }) {

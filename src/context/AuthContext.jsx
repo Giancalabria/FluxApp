@@ -35,8 +35,14 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
+  const updateEmail = (newEmail) =>
+    supabase.auth.updateUser({ email: newEmail });
+
+  const updatePassword = (newPassword) =>
+    supabase.auth.updateUser({ password: newPassword });
+
   const value = useMemo(
-    () => ({ user, loading, signIn, signUp, signOut }),
+    () => ({ user, loading, signIn, signUp, signOut, updateEmail, updatePassword }),
     [user, loading]
   );
 
