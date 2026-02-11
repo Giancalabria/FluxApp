@@ -45,7 +45,14 @@ export default function TransactionFormDialog({ open, onClose, onSave, accounts,
     if (open) setForm(emptyForm);
   }, [open]);
 
-  const handleChange = (e) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === 'amount' || name === 'exchange_rate') {
+      const n = parseFloat(value);
+      if (value !== '' && !isNaN(n) && n < 0) return setForm((prev) => ({ ...prev, [name]: '0' }));
+    }
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
   const handleTypeChange = (_, val) => {
     if (val) setForm((prev) => ({ ...prev, type: val, to_account_id: '', exchange_rate: '' }));
   };
@@ -99,7 +106,8 @@ export default function TransactionFormDialog({ open, onClose, onSave, accounts,
       maxWidth="sm"
       fullWidth
       fullScreen={isMobile}
-      PaperProps={{ component: 'form', onSubmit: handleSubmit }}
+      slots={{ paper: 'form' }}
+      slotProps={{ paper: { onSubmit: handleSubmit } }}
     >
       {/* Mobile: full-screen header bar */}
       {isMobile ? (
@@ -192,9 +200,16 @@ export default function TransactionFormDialog({ open, onClose, onSave, accounts,
                 type="number"
                 value={form.exchange_rate}
                 onChange={handleChange}
-                inputProps={{ step: '0.0001', min: '0' }}
+                slotProps={{ htmlInput: { step: '0.0001', min: 0 } }}
                 required
                 fullWidth
+                sx={{
+                  '& input[type="number"]': { MozAppearance: 'textfield' },
+                  '& input[type="number"]::-webkit-outer-spin-button, & input[type="number"]::-webkit-inner-spin-button': {
+                    WebkitAppearance: 'none',
+                    margin: 0,
+                  },
+                }}
               />
               {form.exchange_rate && form.amount && (
                 <Typography variant="body2" color="text.secondary">
@@ -213,9 +228,16 @@ export default function TransactionFormDialog({ open, onClose, onSave, accounts,
             type="number"
             value={form.amount}
             onChange={handleChange}
-            inputProps={{ step: '0.01', min: '0' }}
+            slotProps={{ htmlInput: { step: '0.01', min: 0 } }}
             required
             fullWidth
+            sx={{
+              '& input[type="number"]': { MozAppearance: 'textfield' },
+              '& input[type="number"]::-webkit-outer-spin-button, & input[type="number"]::-webkit-inner-spin-button': {
+                WebkitAppearance: 'none',
+                margin: 0,
+              },
+            }}
           />
 
           {/* Description */}

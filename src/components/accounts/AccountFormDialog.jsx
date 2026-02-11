@@ -35,7 +35,14 @@ export default function AccountFormDialog({ open, onClose, onSave, initial }) {
     }
   }, [open, initial]);
 
-  const handleChange = (e) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === 'balance') {
+      const n = parseFloat(value);
+      if (value !== '' && !isNaN(n) && n < 0) return setForm((prev) => ({ ...prev, balance: '0' }));
+    }
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -52,7 +59,8 @@ export default function AccountFormDialog({ open, onClose, onSave, initial }) {
       maxWidth="xs"
       fullWidth
       fullScreen={isMobile}
-      PaperProps={{ component: 'form', onSubmit: handleSubmit }}
+      slots={{ paper: 'form' }}
+      slotProps={{ paper: { onSubmit: handleSubmit } }}
     >
       {/* Mobile: full-screen header */}
       {isMobile ? (
@@ -108,8 +116,15 @@ export default function AccountFormDialog({ open, onClose, onSave, initial }) {
             type="number"
             value={form.balance}
             onChange={handleChange}
-            inputProps={{ step: '0.01' }}
+            slotProps={{ htmlInput: { step: '0.01', min: 0 } }}
             fullWidth
+            sx={{
+              '& input[type="number"]': { MozAppearance: 'textfield' },
+              '& input[type="number"]::-webkit-outer-spin-button, & input[type="number"]::-webkit-inner-spin-button': {
+                WebkitAppearance: 'none',
+                margin: 0,
+              },
+            }}
           />
         </Stack>
       </DialogContent>

@@ -45,7 +45,7 @@ export default function AppLayout() {
           variant="temporary"
           open={mobileOpen}
           onClose={handleDrawerToggle}
-          ModalProps={{ keepMounted: true }}
+          slotProps={{ root: { keepMounted: true } }}
           sx={{
             '& .MuiDrawer-paper': {
               width: DRAWER_WIDTH,

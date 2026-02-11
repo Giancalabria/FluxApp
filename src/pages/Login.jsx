@@ -167,8 +167,8 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 fullWidth
-                inputProps={{ minLength: 6 }}
                 slotProps={{
+                  htmlInput: { minLength: 6 },
                   input: {
                     endAdornment: (
                       <InputAdornment position="end">
