@@ -31,7 +31,7 @@ export default function AppRouter() {
       {/* Public */}
       <Route path="/login" element={<Login />} />
 
-      {/* Protected — wrapped in AppLayout */}
+      {/* Protected — known app routes wrapped in auth check + layout */}
       <Route
         element={
           <ProtectedRoute>
@@ -44,9 +44,15 @@ export default function AppRouter() {
         <Route path="/accounts" element={<Accounts />} />
         <Route path="/transactions" element={<Transactions />} />
         <Route path="/reports" element={<Reports />} />
-        {/* Catch-all: inside protected so unauthenticated users go to /login first */}
-        <Route path="*" element={<NotFound />} />
       </Route>
+
+      {/*
+        Catch-all — sits OUTSIDE the protected group.
+        Unknown URLs show 404 directly (no redirect to login).
+        Known protected URLs like /dashboard are matched above and
+        redirect to /login if unauthenticated.
+      */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }

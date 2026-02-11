@@ -24,6 +24,8 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUpRounded';
 import TrendingDownIcon from '@mui/icons-material/TrendingDownRounded';
 import SwapHorizIcon from '@mui/icons-material/SwapHorizRounded';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLongRounded';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWalletRounded';
+import { useNavigate } from 'react-router-dom';
 import { useTransactions } from '../hooks/useTransactions';
 import { useAccounts } from '../hooks/useAccounts';
 import { useCategories } from '../hooks/useCategories';
@@ -42,12 +44,15 @@ function txIcon(type) {
 const chipColor = { income: 'success', expense: 'error', transfer: 'secondary' };
 
 export default function Transactions() {
+  const navigate = useNavigate();
   const [typeFilter, setTypeFilter] = useState('');
   const { transactions, loading, createTransaction, deleteTransaction } = useTransactions(
     typeFilter ? { type: typeFilter } : {}
   );
-  const { accounts } = useAccounts();
+  const { accounts, loading: accLoading } = useAccounts();
   const { categories } = useCategories();
+
+  const hasAccounts = accounts.length > 0;
 
   const [formOpen, setFormOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -101,13 +106,23 @@ export default function Transactions() {
       </Stack>
 
       {transactions.length === 0 ? (
-        <EmptyState
-          icon={ReceiptLongIcon}
-          title="No transactions"
-          subtitle="Tap the + button to record your first income, expense, or transfer."
-          actionLabel="Add Transaction"
-          onAction={() => setFormOpen(true)}
-        />
+        !hasAccounts && !accLoading ? (
+          <EmptyState
+            icon={AccountBalanceWalletIcon}
+            title="No accounts yet"
+            subtitle="You need to create an account before you can add transactions."
+            actionLabel="Go to Accounts"
+            onAction={() => navigate('/accounts')}
+          />
+        ) : (
+          <EmptyState
+            icon={ReceiptLongIcon}
+            title="No transactions"
+            subtitle="Tap the + button to record your first income, expense, or transfer."
+            actionLabel="Add Transaction"
+            onAction={() => setFormOpen(true)}
+          />
+        )
       ) : (
         <Card>
           <CardContent sx={{ p: { xs: 0.5, sm: 2 } }}>
@@ -183,18 +198,23 @@ export default function Transactions() {
         </Card>
       )}
 
-      {/* FAB */}
-      <Fab
-        color="primary"
-        onClick={() => setFormOpen(true)}
-        sx={{
-          position: 'fixed',
-          bottom: { xs: 'calc(60px + env(safe-area-inset-bottom, 0px) + 16px)', md: 24 },
-          right: 24,
-        }}
-      >
-        <AddIcon />
-      </Fab>
+      {/* FAB — disabled when there are no accounts */}
+      <Tooltip title={hasAccounts ? 'Add transaction' : 'Create an account first'}>
+        <span style={{ position: 'fixed', bottom: 'auto', right: 24, zIndex: 1050 }}>
+          <Fab
+            color="primary"
+            onClick={() => setFormOpen(true)}
+            disabled={!hasAccounts}
+            sx={{
+              position: 'fixed',
+              bottom: { xs: 'calc(60px + env(safe-area-inset-bottom, 0px) + 16px)', md: 24 },
+              right: 24,
+            }}
+          >
+            <AddIcon />
+          </Fab>
+        </span>
+      </Tooltip>
 
       {/* Form dialog */}
       <TransactionFormDialog

@@ -11,7 +11,11 @@ import {
   Alert,
   CircularProgress,
   Link,
+  IconButton,
+  InputAdornment,
 } from '@mui/material';
+import VisibilityIcon from '@mui/icons-material/VisibilityRounded';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOffRounded';
 import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
@@ -21,6 +25,7 @@ export default function Login() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
@@ -38,7 +43,6 @@ export default function Login() {
     if (err) {
       setError(err.message);
     } else if (isSignUp) {
-      // Account created — clear the form and switch to sign-in view
       setEmail('');
       setPassword('');
       setIsSignUp(false);
@@ -94,12 +98,28 @@ export default function Login() {
               />
               <TextField
                 label="Password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 fullWidth
                 inputProps={{ minLength: 6 }}
+                slotProps={{
+                  input: {
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => setShowPassword((prev) => !prev)}
+                          edge="end"
+                          aria-label={showPassword ? 'Hide password' : 'Show password'}
+                          size="small"
+                        >
+                          {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  },
+                }}
               />
               <Button
                 type="submit"
