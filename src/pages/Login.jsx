@@ -31,7 +31,7 @@ function isStandalone() {
 
 export default function Login() {
   const navigate = useNavigate();
-  const { signIn, signUp } = useAuth();
+  const { user, loading: authLoading, signIn, signUp } = useAuth();
 
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
@@ -41,6 +41,13 @@ export default function Login() {
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
   const [showInstallHint, setShowInstallHint] = useState(false);
+
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [authLoading, user, navigate]);
 
   useEffect(() => {
     const hideHint = sessionStorage.getItem('fluxapp-hide-install-hint');
@@ -75,6 +82,26 @@ export default function Login() {
 
     setLoading(false);
   };
+
+  if (authLoading) {
+    return (
+      <Box
+        sx={{
+          minHeight: '100dvh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          bgcolor: 'background.default',
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (user) {
+    return null; // Redirect is in progress
+  }
 
   return (
     <Box
