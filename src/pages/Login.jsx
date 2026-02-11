@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -13,10 +13,21 @@ import {
   Link,
   IconButton,
   InputAdornment,
+  Collapse,
 } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/VisibilityRounded';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOffRounded';
 import { useAuth } from '../context/AuthContext';
+
+/** True when the app is already opened as installed PWA (no browser UI). */
+function isStandalone() {
+  if (typeof window === 'undefined') return true;
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true ||
+    document.referrer.includes('android-app://')
+  );
+}
 
 export default function Login() {
   const navigate = useNavigate();
@@ -29,6 +40,17 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
+  const [showInstallHint, setShowInstallHint] = useState(false);
+
+  useEffect(() => {
+    const hideHint = sessionStorage.getItem('fluxapp-hide-install-hint');
+    setShowInstallHint(!isStandalone() && !hideHint);
+  }, []);
+
+  const dismissInstallHint = () => {
+    setShowInstallHint(false);
+    sessionStorage.setItem('fluxapp-hide-install-hint', '1');
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -73,6 +95,21 @@ export default function Login() {
           <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mb: 3 }}>
             {isSignUp ? 'Create your account' : 'Sign in to your account'}
           </Typography>
+
+          <Collapse in={showInstallHint}>
+            <Alert
+              severity="info"
+              onClose={dismissInstallHint}
+              sx={{ mb: 2 }}
+              slotProps={{
+                closeButton: { 'aria-label': 'Dismiss' },
+              }}
+            >
+              <Typography variant="body2" component="span">
+                <strong>Use without the browser bar:</strong> Tap Chrome&apos;s menu (⋮) at the top right → &quot;Add to Home screen&quot; or &quot;Install app&quot;. Then open FluxApp from your home screen.
+              </Typography>
+            </Alert>
+          </Collapse>
 
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
