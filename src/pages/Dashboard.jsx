@@ -6,21 +6,23 @@ import {
   CardContent,
   Typography,
   Grid,
-  Chip,
   List,
   ListItem,
   ListItemText,
   ListItemIcon,
   Skeleton,
   Button,
+  Tooltip,
 } from '@mui/material';
 import TrendingUpIcon from '@mui/icons-material/TrendingUpRounded';
 import TrendingDownIcon from '@mui/icons-material/TrendingDownRounded';
 import SwapHorizIcon from '@mui/icons-material/SwapHorizRounded';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWalletRounded';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForwardRounded';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoneyRounded';
 import { useAccounts } from '../hooks/useAccounts';
 import { useTransactions } from '../hooks/useTransactions';
+import { useExchangeRates } from '../hooks/useExchangeRates';
 import { formatCurrency, formatDate } from '../lib/formatters';
 import { TRANSACTION_TYPES } from '../constants';
 
@@ -85,6 +87,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { accounts, loading: accLoading } = useAccounts();
   const { transactions, loading: txLoading } = useTransactions();
+  const { totalBalanceUsd, monthTotalsUsd, usdArsRate, loading: rateLoading, error: rateError } = useExchangeRates();
 
   const loading = accLoading || txLoading;
 
@@ -97,20 +100,11 @@ export default function Dashboard() {
     return map;
   }, [accounts]);
 
-  // This month's income & expense
-  const { monthIncome, monthExpense } = useMemo(() => {
-    const now = new Date();
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
-    let inc = 0;
-    let exp = 0;
-    transactions.forEach((t) => {
-      if (t.date >= monthStart) {
-        if (t.type === TRANSACTION_TYPES.INCOME) inc += Number(t.amount);
-        if (t.type === TRANSACTION_TYPES.EXPENSE) exp += Number(t.amount);
-      }
-    });
-    return { monthIncome: inc, monthExpense: exp };
-  }, [transactions]);
+  // Total balance in USD (ARS converted at dólar blue; USD, USDT, USDC = 1:1)
+  const totalUsd = useMemo(() => totalBalanceUsd(accounts), [accounts, totalBalanceUsd]);
+
+  // This month's income & expense in USD (normalized for comparison / inflation)
+  const monthUsd = useMemo(() => monthTotalsUsd(transactions), [transactions, monthTotalsUsd]);
 
   const recentTx = transactions.slice(0, 6);
 
@@ -140,6 +134,36 @@ export default function Dashboard() {
 
       {/* ── Summary cards ──────────────────────────────────────────────────── */}
       <Grid container spacing={1.5} sx={{ mb: 3 }}>
+        {/* Total balance in USD (all currencies converted; ARS = dólar blue) */}
+        <Grid size={{ xs: 12, sm: 4 }}>
+          <Tooltip
+            title={
+              rateError
+                ? rateError
+                : usdArsRate != null
+                  ? `1 USD ≈ ${Number(usdArsRate).toLocaleString('es-AR')} ARS (dólar blue). USD, USDT, USDC = 1:1.`
+                  : 'Loading rate from DolarAPI (dólar blue)…'
+            }
+          >
+            <Box component="span" sx={{ display: 'block' }}>
+              <StatCard
+                label={rateLoading ? 'Total (USD) …' : 'Total balance (USD)'}
+                value={
+                  rateLoading
+                    ? '…'
+                    : totalUsd != null
+                      ? formatCurrency(totalUsd, 'USD')
+                      : rateError
+                        ? '—'
+                        : '—'
+                }
+                color="primary"
+                icon={<AttachMoneyIcon />}
+              />
+            </Box>
+          </Tooltip>
+        </Grid>
+
         {/* One card per currency balance */}
         {Object.entries(balanceByCurrency).map(([currency, total]) => (
           <Grid size={{ xs: 12, sm: 4 }} key={currency}>
@@ -165,21 +189,29 @@ export default function Dashboard() {
         )}
 
         <Grid size={{ xs: 6, sm: 4 }}>
-          <StatCard
-            label="Income (month)"
-            value={formatCurrency(monthIncome)}
-            color="success"
-            icon={<TrendingUpIcon />}
-          />
+          <Tooltip title="Converted to USD (ARS at dólar blue). Lets you compare across currencies and inflation.">
+            <Box component="span" sx={{ display: 'block' }}>
+              <StatCard
+                label="Income (month, USD)"
+                value={formatCurrency(monthUsd.income, 'USD')}
+                color="success"
+                icon={<TrendingUpIcon />}
+              />
+            </Box>
+          </Tooltip>
         </Grid>
 
         <Grid size={{ xs: 6, sm: 4 }}>
-          <StatCard
-            label="Expenses (month)"
-            value={formatCurrency(monthExpense)}
-            color="error"
-            icon={<TrendingDownIcon />}
-          />
+          <Tooltip title="Converted to USD (ARS at dólar blue). Lets you compare across currencies and inflation.">
+            <Box component="span" sx={{ display: 'block' }}>
+              <StatCard
+                label="Expenses (month, USD)"
+                value={formatCurrency(monthUsd.expense, 'USD')}
+                color="error"
+                icon={<TrendingDownIcon />}
+              />
+            </Box>
+          </Tooltip>
         </Grid>
       </Grid>
 
