@@ -117,12 +117,15 @@ CREATE TRIGGER accounts_updated_at
 
 
 -- ─── 5. Auto-set user_id from auth context ─────────────────────────────────
--- This trigger automatically fills user_id on INSERT so the frontend
--- doesn't need to send it explicitly.
+-- This trigger fills user_id on INSERT when the frontend doesn't send it.
+-- It only acts when user_id is NULL so it doesn't conflict with
+-- server-side inserts (like the category seeder which passes user_id explicitly).
 CREATE OR REPLACE FUNCTION public.set_user_id()
 RETURNS TRIGGER AS $$
 BEGIN
-  NEW.user_id = auth.uid();
+  IF NEW.user_id IS NULL THEN
+    NEW.user_id = auth.uid();
+  END IF;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;

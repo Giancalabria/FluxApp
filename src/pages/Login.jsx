@@ -31,12 +31,18 @@ export default function Login() {
     setInfo('');
     setLoading(true);
 
-    const { error: err } = isSignUp ? await signUp(email, password) : await signIn(email, password);
+    const { error: err } = isSignUp
+      ? await signUp(email, password)
+      : await signIn(email, password);
 
     if (err) {
       setError(err.message);
     } else if (isSignUp) {
-      setInfo('Check your email to confirm your account, then sign in.');
+      // Account created — clear the form and switch to sign-in view
+      setEmail('');
+      setPassword('');
+      setIsSignUp(false);
+      setInfo('Account created! You can now sign in.');
     } else {
       navigate('/dashboard');
     }
