@@ -44,10 +44,9 @@ export default function AppRouter() {
         <Route path="/accounts" element={<Accounts />} />
         <Route path="/transactions" element={<Transactions />} />
         <Route path="/reports" element={<Reports />} />
+        {/* Catch-all: inside protected so unauthenticated users go to /login first */}
+        <Route path="*" element={<NotFound />} />
       </Route>
-
-      {/* Catch-all */}
-      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
