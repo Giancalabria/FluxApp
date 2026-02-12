@@ -14,12 +14,7 @@ export function useTransactions(filters = {}) {
       setTransactions([]);
     } else {
       setError(null);
-      // Normalize: Supabase may return relation as "account" or "accounts"
-      const list = (data ?? []).map((t) => ({
-        ...t,
-        account: t.account ?? t.accounts ?? null,
-      }));
-      setTransactions(list);
+      setTransactions(data ?? []);
     }
     setLoading(false);
   }, [JSON.stringify(filters)]);
