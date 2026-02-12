@@ -100,15 +100,8 @@ export default function TransactionFormDialog({ open, onClose, onSave, accounts,
   const isExpense = form.type === TRANSACTION_TYPES.EXPENSE;
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="sm"
-      fullWidth
-      fullScreen={isMobile}
-      slots={{ paper: 'form' }}
-      slotProps={{ paper: { onSubmit: handleSubmit } }}
-    >
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth fullScreen={isMobile}>
+      <form onSubmit={handleSubmit}>
       {/* Mobile: full-screen header bar */}
       {isMobile ? (
         <AppBar position="sticky" elevation={0} sx={{ bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider' }}>
@@ -317,6 +310,7 @@ export default function TransactionFormDialog({ open, onClose, onSave, accounts,
           </Button>
         </DialogActions>
       )}
+      </form>
     </Dialog>
   );
 }

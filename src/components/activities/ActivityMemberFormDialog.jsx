@@ -37,15 +37,8 @@ export default function ActivityMemberFormDialog({ open, onClose, onSave }) {
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="xs"
-      fullWidth
-      fullScreen={isMobile}
-      slots={{ paper: 'form' }}
-      slotProps={{ paper: { onSubmit: handleSubmit } }}
-    >
+    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth fullScreen={isMobile}>
+      <form onSubmit={handleSubmit}>
       {isMobile ? (
         <AppBar position="sticky" elevation={0} sx={{ bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider' }}>
           <Toolbar>
@@ -89,6 +82,7 @@ export default function ActivityMemberFormDialog({ open, onClose, onSave }) {
           </Button>
         </DialogActions>
       )}
+      </form>
     </Dialog>
   );
 }

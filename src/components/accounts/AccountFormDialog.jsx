@@ -53,15 +53,8 @@ export default function AccountFormDialog({ open, onClose, onSave, initial }) {
   const title = isEdit ? 'Edit Account' : 'New Account';
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="xs"
-      fullWidth
-      fullScreen={isMobile}
-      slots={{ paper: 'form' }}
-      slotProps={{ paper: { onSubmit: handleSubmit } }}
-    >
+    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth fullScreen={isMobile}>
+      <form onSubmit={handleSubmit}>
       {/* Mobile: full-screen header */}
       {isMobile ? (
         <AppBar position="sticky" elevation={0} sx={{ bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider' }}>
@@ -140,6 +133,7 @@ export default function AccountFormDialog({ open, onClose, onSave, initial }) {
           </Button>
         </DialogActions>
       )}
+      </form>
     </Dialog>
   );
 }

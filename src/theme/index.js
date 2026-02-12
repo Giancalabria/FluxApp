@@ -108,6 +108,9 @@ const theme = createTheme({
       styleOverrides: {
         paper: {
           borderRadius: 20,
+          backgroundColor: '#1E293B',
+          backgroundImage: 'none',
+          border: '1px solid rgba(148, 163, 184, 0.12)',
         },
       },
     },
