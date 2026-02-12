@@ -31,11 +31,13 @@ import { useTransactions } from '../hooks/useTransactions';
 import { useAccounts } from '../hooks/useAccounts';
 import { useCategories } from '../hooks/useCategories';
 import { formatCurrency, formatDate } from '../lib/formatters';
+import { getPresetRange } from '../lib/dateRangePresets';
 import { TRANSACTION_TYPES, TRANSACTION_TYPE_OPTIONS } from '../constants';
 import { exchangeRateService } from '../services/exchangeRateService';
 import TransactionFormDialog from '../components/transactions/TransactionFormDialog';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import EmptyState from '../components/common/EmptyState';
+import DateRangeFilter from '../components/common/DateRangeFilter';
 
 function txIcon(type) {
   if (type === TRANSACTION_TYPES.INCOME) return <TrendingUpIcon color="success" />;
@@ -48,9 +50,13 @@ const chipColor = { income: 'success', expense: 'error', transfer: 'secondary' }
 export default function Transactions() {
   const navigate = useNavigate();
   const [typeFilter, setTypeFilter] = useState('');
-  const { transactions, loading, error: txError, clearError, createTransaction, deleteTransaction } = useTransactions(
-    typeFilter ? { type: typeFilter } : {}
-  );
+  const [dateRange, setDateRange] = useState(() => getPresetRange('this_month'));
+  const filters = {
+    ...(typeFilter && { type: typeFilter }),
+    ...(dateRange?.dateFrom && { dateFrom: dateRange.dateFrom }),
+    ...(dateRange?.dateTo && { dateTo: dateRange.dateTo }),
+  };
+  const { transactions, loading, error: txError, clearError, createTransaction, deleteTransaction } = useTransactions(filters);
   const { accounts, loading: accLoading } = useAccounts();
   const { categories } = useCategories();
 
@@ -109,7 +115,8 @@ export default function Transactions() {
       )}
 
       {/* Filter bar */}
-      <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 2 }} alignItems={{ sm: 'center' }}>
+        <DateRangeFilter value={dateRange} onChange={setDateRange} />
         <TextField
           label="Type"
           value={typeFilter}
