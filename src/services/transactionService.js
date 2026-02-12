@@ -8,7 +8,11 @@ export const transactionService = {
   async getAll(filters = {}) {
     let query = supabase
       .from('transactions')
-      .select('*, account:accounts(name, currency), category:categories(name, classification)')
+      .select(`
+        *,
+        account:accounts!account_id(name, currency),
+        category:categories!category_id(name, classification)
+      `)
       .order('date', { ascending: false });
 
     if (filters.accountId) query = query.eq('account_id', filters.accountId);

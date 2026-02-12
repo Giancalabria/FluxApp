@@ -100,7 +100,19 @@ export default function TransactionFormDialog({ open, onClose, onSave, accounts,
   const isExpense = form.type === TRANSACTION_TYPES.EXPENSE;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth fullScreen={isMobile}>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="sm"
+      fullWidth
+      fullScreen={isMobile}
+      slotProps={{
+        backdrop: {
+          sx: { backgroundColor: 'rgba(0, 0, 0, 0.75)', backdropFilter: 'blur(4px)' },
+          invisible: false,
+        },
+      }}
+    >
       <form onSubmit={handleSubmit}>
       {/* Mobile: full-screen header bar */}
       {isMobile ? (

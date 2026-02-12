@@ -122,7 +122,19 @@ export default function ActivityExpenseFormDialog({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth fullScreen={isMobile}>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="sm"
+      fullWidth
+      fullScreen={isMobile}
+      slotProps={{
+        backdrop: {
+          sx: { backgroundColor: 'rgba(0, 0, 0, 0.75)', backdropFilter: 'blur(4px)' },
+          invisible: false,
+        },
+      }}
+    >
       <form onSubmit={handleSubmit}>
       {isMobile ? (
         <AppBar position="sticky" elevation={0} sx={{ bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider' }}>

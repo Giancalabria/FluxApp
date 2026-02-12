@@ -11,9 +11,15 @@ export function useTransactions(filters = {}) {
     const { data, error: err } = await transactionService.getAll(filters);
     if (err) {
       setError(err.message);
+      setTransactions([]);
     } else {
-      setTransactions(data ?? []);
       setError(null);
+      // Normalize: Supabase may return relation as "account" or "accounts"
+      const list = (data ?? []).map((t) => ({
+        ...t,
+        account: t.account ?? t.accounts ?? null,
+      }));
+      setTransactions(list);
     }
     setLoading(false);
   }, [JSON.stringify(filters)]);
@@ -34,5 +40,7 @@ export function useTransactions(filters = {}) {
     return { error: err };
   };
 
-  return { transactions, loading, error, refetch: fetch, createTransaction, deleteTransaction };
+  const clearError = useCallback(() => setError(null), []);
+
+  return { transactions, loading, error, refetch: fetch, createTransaction, deleteTransaction, clearError };
 }

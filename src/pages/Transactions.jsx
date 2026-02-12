@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {
+  Alert,
   Box,
   Typography,
   Card,
@@ -47,7 +48,7 @@ const chipColor = { income: 'success', expense: 'error', transfer: 'secondary' }
 export default function Transactions() {
   const navigate = useNavigate();
   const [typeFilter, setTypeFilter] = useState('');
-  const { transactions, loading, createTransaction, deleteTransaction } = useTransactions(
+  const { transactions, loading, error: txError, clearError, createTransaction, deleteTransaction } = useTransactions(
     typeFilter ? { type: typeFilter } : {}
   );
   const { accounts, loading: accLoading } = useAccounts();
@@ -100,6 +101,12 @@ export default function Transactions() {
       <Typography variant="h5" fontWeight={700} gutterBottom>
         Transactions
       </Typography>
+
+      {txError && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={clearError}>
+          {txError}
+        </Alert>
+      )}
 
       {/* Filter bar */}
       <Stack direction="row" spacing={2} sx={{ mb: 2 }}>

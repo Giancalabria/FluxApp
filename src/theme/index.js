@@ -113,6 +113,17 @@ const theme = createTheme({
           border: '1px solid rgba(148, 163, 184, 0.12)',
         },
       },
+      defaultProps: {
+        slotProps: {
+          backdrop: {
+            sx: {
+              backgroundColor: 'rgba(0, 0, 0, 0.75)',
+              backdropFilter: 'blur(4px)',
+            },
+            invisible: false,
+          },
+        },
+      },
     },
     MuiTextField: {
       defaultProps: {

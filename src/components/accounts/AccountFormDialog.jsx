@@ -53,7 +53,19 @@ export default function AccountFormDialog({ open, onClose, onSave, initial }) {
   const title = isEdit ? 'Edit Account' : 'New Account';
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth fullScreen={isMobile}>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="xs"
+      fullWidth
+      fullScreen={isMobile}
+      slotProps={{
+        backdrop: {
+          sx: { backgroundColor: 'rgba(0, 0, 0, 0.75)', backdropFilter: 'blur(4px)' },
+          invisible: false,
+        },
+      }}
+    >
       <form onSubmit={handleSubmit}>
       {/* Mobile: full-screen header */}
       {isMobile ? (
