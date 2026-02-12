@@ -25,6 +25,10 @@ import {
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMoreRounded';
 import ExpandLessIcon from '@mui/icons-material/ExpandLessRounded';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWalletRounded';
+import TrendingUpIcon from '@mui/icons-material/TrendingUpRounded';
+import TrendingDownIcon from '@mui/icons-material/TrendingDownRounded';
+import CompareArrowsIcon from '@mui/icons-material/CompareArrowsRounded';
 import { useTransactions } from '../hooks/useTransactions';
 import { useAccounts } from '../hooks/useAccounts';
 import { formatCurrency, formatDate } from '../lib/formatters';
@@ -37,6 +41,58 @@ const classColors = {
   variable: 'info',
   essential: 'secondary',
 };
+
+function SummaryCard({ label, value, subtitle, color, icon }) {
+  return (
+    <Card sx={{ height: '100%' }}>
+      <CardContent
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.5,
+          py: { xs: 1.5, sm: 2 },
+          px: { xs: 1.5, sm: 2 },
+          '&:last-child': { pb: { xs: 1.5, sm: 2 } },
+        }}
+      >
+        <Box
+          sx={{
+            width: 40,
+            height: 40,
+            borderRadius: 2,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            bgcolor: color ? `${color}.main` : 'action.hover',
+            color: color ? `${color}.contrastText` : 'text.secondary',
+            flexShrink: 0,
+            opacity: 0.9,
+          }}
+        >
+          {icon}
+        </Box>
+        <Box sx={{ minWidth: 0, flex: 1 }}>
+          <Typography variant="caption" color="text.secondary" display="block">
+            {label}
+          </Typography>
+          <Typography
+            variant="subtitle1"
+            fontWeight={700}
+            noWrap
+            sx={color ? { color: `${color}.main` } : {}}
+          >
+            {value}
+          </Typography>
+          {subtitle && (
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.25 }}>
+              {subtitle}
+            </Typography>
+          )}
+        </Box>
+      </CardContent>
+    </Card>
+  );
+}
 
 function getClassification(t) {
   return t.category?.classification ?? t.classification;
@@ -148,9 +204,8 @@ export default function Reports() {
         Reports
       </Typography>
 
-      <DateRangeFilter value={dateRange} onChange={setDateRange} sx={{ mb: 2 }} />
-
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 3 }} alignItems={{ sm: 'center' }}>
+      <Stack direction="row" spacing={2} sx={{ mb: 3 }} alignItems="center" flexWrap="wrap">
+        <DateRangeFilter value={dateRange} onChange={setDateRange} />
         <TextField
           select
           SelectProps={{ multiple: true }}
@@ -161,7 +216,7 @@ export default function Reports() {
             setSelectedAccountIds(Array.isArray(v) ? v : []);
           }}
           size="small"
-          sx={{ minWidth: 280 }}
+          sx={{ minWidth: 200 }}
           renderValue={(ids) => {
             if (ids.length === 0) return 'All accounts';
             if (ids.length === 1) return accounts.find((a) => a.id === ids[0])?.name ?? ids[0];
@@ -185,63 +240,37 @@ export default function Reports() {
         <>
           <Grid container spacing={1.5} sx={{ mb: 3 }}>
             <Grid size={{ xs: 6, sm: 3 }}>
-              <Card>
-                <CardContent sx={{ py: 2, '&:last-child': { pb: 2 } }}>
-                  <Typography variant="caption" color="text.secondary">
-                    Initial Balance
-                  </Typography>
-                  <Typography variant="h6" fontWeight={700} noWrap>
-                    {formatCurrency(totals.initialBalance)}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                    Start of period
-                  </Typography>
-                </CardContent>
-              </Card>
+              <SummaryCard
+                label="Initial Balance"
+                value={formatCurrency(totals.initialBalance)}
+                subtitle="Start of period"
+                icon={<AccountBalanceWalletIcon fontSize="small" />}
+              />
             </Grid>
             <Grid size={{ xs: 6, sm: 3 }}>
-              <Card>
-                <CardContent sx={{ py: 2, '&:last-child': { pb: 2 } }}>
-                  <Typography variant="caption" color="text.secondary">
-                    Income
-                  </Typography>
-                  <Typography variant="h6" color="success.main" fontWeight={700} noWrap>
-                    {formatCurrency(totals.income)}
-                  </Typography>
-                </CardContent>
-              </Card>
+              <SummaryCard
+                label="Income"
+                value={formatCurrency(totals.income)}
+                color="success"
+                icon={<TrendingUpIcon fontSize="small" />}
+              />
             </Grid>
             <Grid size={{ xs: 6, sm: 3 }}>
-              <Card>
-                <CardContent sx={{ py: 2, '&:last-child': { pb: 2 } }}>
-                  <Typography variant="caption" color="text.secondary">
-                    Expenses
-                  </Typography>
-                  <Typography variant="h6" color="error.main" fontWeight={700} noWrap>
-                    {formatCurrency(totals.expense)}
-                  </Typography>
-                </CardContent>
-              </Card>
+              <SummaryCard
+                label="Expenses"
+                value={formatCurrency(totals.expense)}
+                color="error"
+                icon={<TrendingDownIcon fontSize="small" />}
+              />
             </Grid>
             <Grid size={{ xs: 6, sm: 3 }}>
-              <Card>
-                <CardContent sx={{ py: 2, '&:last-child': { pb: 2 } }}>
-                  <Typography variant="caption" color="text.secondary">
-                    Net
-                  </Typography>
-                  <Typography
-                    variant="h6"
-                    fontWeight={700}
-                    noWrap
-                    color={totals.net >= 0 ? 'success.main' : 'error.main'}
-                  >
-                    {formatCurrency(totals.net)}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                    Initial + Income − Expenses
-                  </Typography>
-                </CardContent>
-              </Card>
+              <SummaryCard
+                label="Net"
+                value={formatCurrency(totals.net)}
+                subtitle="Initial + Income − Expenses"
+                color={totals.net >= 0 ? 'success' : 'error'}
+                icon={<CompareArrowsIcon fontSize="small" />}
+              />
             </Grid>
           </Grid>
 
