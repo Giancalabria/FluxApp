@@ -19,6 +19,7 @@ import {
   Alert,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/CloseRounded';
+import { todayLocal } from '../../lib/dateRangePresets';
 
 const SPLIT_TYPES = { equal: 'equal', custom: 'custom' };
 
@@ -47,7 +48,7 @@ export default function ActivityExpenseFormDialog({
   const [paidBy, setPaidBy] = useState('');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(todayLocal());
   const [splitType, setSplitType] = useState(SPLIT_TYPES.equal);
   const [selectedMemberIds, setSelectedMemberIds] = useState([]);
   const [customAmounts, setCustomAmounts] = useState({});
@@ -70,7 +71,7 @@ export default function ActivityExpenseFormDialog({
       setPaidBy('');
       setAmount('');
       setDescription('');
-      setDate(new Date().toISOString().slice(0, 10));
+      setDate(todayLocal());
       setSplitType(SPLIT_TYPES.equal);
       setSelectedMemberIds(members.length ? [members[0].id] : []);
       setCustomAmounts({});

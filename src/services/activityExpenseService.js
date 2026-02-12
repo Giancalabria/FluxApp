@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { todayLocal } from '../lib/dateRangePresets';
 
 export const activityExpenseService = {
   /**
@@ -37,7 +38,7 @@ export const activityExpenseService = {
       paid_by_member_id,
       amount: Number(amount),
       description: description || null,
-      date: date || new Date().toISOString().slice(0, 10),
+      date: date || todayLocal(),
     };
 
     const { data: expense, error: expError } = await supabase

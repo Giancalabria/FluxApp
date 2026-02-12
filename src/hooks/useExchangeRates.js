@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { exchangeRateService } from '../services/exchangeRateService';
+import { toISODate } from '../lib/dateRangePresets';
 
 /**
  * Hook for USD/ARS rate (dólar blue) and helpers to convert amounts to USD.
@@ -64,7 +65,7 @@ export function useExchangeRates() {
   const monthTotalsUsd = useCallback(
     (transactions) => {
       const now = new Date();
-      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+      const monthStart = toISODate(new Date(now.getFullYear(), now.getMonth(), 1));
       let income = 0;
       let expense = 0;
       for (const t of transactions || []) {

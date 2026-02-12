@@ -1,5 +1,6 @@
 /**
  * Date range preset labels and logic. All dates in local time, YYYY-MM-DD.
+ * Use these so filtering and defaults match the user's timezone (e.g. Argentina UTC-3).
  */
 
 export function toISODate(d) {
@@ -7,6 +8,23 @@ export function toISODate(d) {
   const m = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   return `${y}-${m}-${day}`;
+}
+
+/** Today in the user's local timezone as YYYY-MM-DD (for form defaults, etc.). */
+export function todayLocal() {
+  return toISODate(new Date());
+}
+
+/** Return an array of YYYY-MM-DD date strings from dateFrom through dateTo (inclusive). */
+export function dateRangeToList(dateFrom, dateTo) {
+  if (!dateFrom || !dateTo || dateFrom > dateTo) return [];
+  const list = [];
+  const start = new Date(dateFrom + 'T12:00:00');
+  const end = new Date(dateTo + 'T12:00:00');
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    list.push(toISODate(d));
+  }
+  return list;
 }
 
 export function getPresetRange(preset) {

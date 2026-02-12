@@ -23,6 +23,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUpRounded';
 import TrendingDownIcon from '@mui/icons-material/TrendingDownRounded';
 import SwapHorizIcon from '@mui/icons-material/SwapHorizRounded';
 import { TRANSACTION_TYPES, EXPENSE_CLASS_OPTIONS } from '../../constants';
+import { todayLocal } from '../../lib/dateRangePresets';
 
 const emptyForm = {
   type: 'expense',
@@ -32,7 +33,7 @@ const emptyForm = {
   description: '',
   category_id: '',
   classification: '',
-  date: new Date().toISOString().slice(0, 10),
+  date: todayLocal(),
   exchange_rate: '',
 };
 
@@ -42,7 +43,7 @@ export default function TransactionFormDialog({ open, onClose, onSave, accounts,
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
-    if (open) setForm(emptyForm);
+    if (open) setForm({ ...emptyForm, date: todayLocal() });
   }, [open]);
 
   const handleChange = (e) => {
