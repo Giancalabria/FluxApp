@@ -18,6 +18,8 @@ export function getPresetRange(preset) {
   const dayOfWeek = today.getDay(); // 0 Sun .. 6 Sat
 
   switch (preset) {
+    case 'all_time':
+      return null; // no date filter
     case 'today': {
       const s = toISODate(today);
       return { dateFrom: s, dateTo: s };
@@ -61,6 +63,7 @@ export function getPresetRange(preset) {
 }
 
 export const DATE_RANGE_PRESET_OPTIONS = [
+  { value: 'all_time', label: 'All time' },
   { value: 'today', label: 'Today' },
   { value: 'this_week', label: 'This week' },
   { value: 'last_week', label: 'Last week' },

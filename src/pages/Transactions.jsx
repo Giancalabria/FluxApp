@@ -27,6 +27,7 @@ import SwapHorizIcon from '@mui/icons-material/SwapHorizRounded';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLongRounded';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWalletRounded';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { useTransactions } from '../hooks/useTransactions';
 import { useAccounts } from '../hooks/useAccounts';
 import { useCategories } from '../hooks/useCategories';
@@ -49,8 +50,9 @@ const chipColor = { income: 'success', expense: 'error', transfer: 'secondary' }
 
 export default function Transactions() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [typeFilter, setTypeFilter] = useState('');
-  const [dateRange, setDateRange] = useState(() => getPresetRange('this_month'));
+  const [dateRange, setDateRange] = useState(() => getPresetRange('all_time') ?? { dateFrom: null, dateTo: null });
   const filters = {
     ...(typeFilter && { type: typeFilter }),
     ...(dateRange?.dateFrom && { dateFrom: dateRange.dateFrom }),
@@ -66,6 +68,7 @@ export default function Transactions() {
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const handleSave = async (values) => {
+    if (user?.id) values.user_id = user.id;
     const account = accounts.find((a) => a.id === values.account_id);
     if (account) {
       try {

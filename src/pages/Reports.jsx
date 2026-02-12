@@ -33,7 +33,7 @@ function getClassification(t) {
 }
 
 export default function Reports() {
-  const defaultRange = useMemo(() => getPresetRange('this_month'), []);
+  const defaultRange = useMemo(() => getPresetRange('all_time') ?? { dateFrom: null, dateTo: null }, []);
   const [dateRange, setDateRange] = useState(defaultRange);
   const filters = {
     ...(dateRange?.dateFrom && { dateFrom: dateRange.dateFrom }),

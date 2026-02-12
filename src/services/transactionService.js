@@ -17,8 +17,10 @@ export const transactionService = {
 
     if (filters.accountId) query = query.eq('account_id', filters.accountId);
     if (filters.type) query = query.eq('type', filters.type);
-    if (filters.dateFrom) query = query.gte('date', filters.dateFrom);
-    if (filters.dateTo) query = query.lte('date', filters.dateTo);
+    const from = filters.dateFrom && String(filters.dateFrom).trim();
+    const to = filters.dateTo && String(filters.dateTo).trim();
+    if (from) query = query.gte('date', from);
+    if (to) query = query.lte('date', to);
 
     const { data, error } = await query;
     return { data, error };

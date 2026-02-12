@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { Stack, TextField, MenuItem } from '@mui/material';
+import { useMemo, useState } from 'react';
+import { Stack, TextField, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 import {
   getPresetRange,
   toISODate,
@@ -7,9 +7,10 @@ import {
 } from '../../lib/dateRangePresets';
 
 function detectPreset(dateFrom, dateTo) {
+  if (!dateFrom && !dateTo) return 'all_time';
   if (!dateFrom || !dateTo) return 'custom';
   for (const opt of DATE_RANGE_PRESET_OPTIONS) {
-    if (opt.value === 'custom') continue;
+    if (opt.value === 'custom' || opt.value === 'all_time') continue;
     const r = getPresetRange(opt.value);
     if (r && r.dateFrom === dateFrom && r.dateTo === dateTo) return opt.value;
   }
@@ -23,22 +24,32 @@ export default function DateRangeFilter({ value, onChange, size = 'small', sx })
     [dateFrom, dateTo]
   );
 
+  const [customOpen, setCustomOpen] = useState(false);
+  const [customFrom, setCustomFrom] = useState(() => dateFrom || toISODate(new Date()));
+  const [customTo, setCustomTo] = useState(() => dateTo || toISODate(new Date()));
+
   const handlePresetChange = (presetValue) => {
     if (presetValue === 'custom') {
-      onChange({ dateFrom: dateFrom || toISODate(new Date()), dateTo: dateTo || toISODate(new Date()) });
+      const today = toISODate(new Date());
+      setCustomFrom(dateFrom || today);
+      setCustomTo(dateTo || today);
+      setCustomOpen(true);
       return;
     }
     const r = getPresetRange(presetValue);
     if (r) onChange(r);
+    else onChange({ dateFrom: null, dateTo: null }); // all_time
   };
 
-  const handleFromChange = (e) => {
-    const from = e.target.value;
-    onChange({ dateFrom: from, dateTo: dateTo || from });
+  const handleCustomApply = () => {
+    const from = customFrom || customTo || toISODate(new Date());
+    const to = customTo || customFrom || toISODate(new Date());
+    onChange({ dateFrom: from, dateTo: to });
+    setCustomOpen(false);
   };
 
-  const handleToChange = (e) => {
-    onChange({ dateFrom: dateFrom || e.target.value, dateTo: e.target.value });
+  const handleCustomCancel = () => {
+    setCustomOpen(false);
   };
 
   return (
@@ -57,28 +68,38 @@ export default function DateRangeFilter({ value, onChange, size = 'small', sx })
           </MenuItem>
         ))}
       </TextField>
-      {preset === 'custom' && (
-        <>
-          <TextField
-            label="From"
-            type="date"
-            value={dateFrom || ''}
-            onChange={handleFromChange}
-            slotProps={{ inputLabel: { shrink: true } }}
-            size={size}
-            sx={{ minWidth: 160 }}
-          />
-          <TextField
-            label="To"
-            type="date"
-            value={dateTo || ''}
-            onChange={handleToChange}
-            slotProps={{ inputLabel: { shrink: true } }}
-            size={size}
-            sx={{ minWidth: 160 }}
-          />
-        </>
-      )}
+
+      <Dialog open={customOpen} onClose={handleCustomCancel} slotProps={{ paper: { sx: { minWidth: 320 } } }}>
+        <DialogTitle>Select date range</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ pt: 1 }}>
+            <TextField
+              label="From"
+              type="date"
+              value={customFrom || ''}
+              onChange={(e) => setCustomFrom(e.target.value)}
+              slotProps={{ inputLabel: { shrink: true } }}
+              size={size}
+              fullWidth
+            />
+            <TextField
+              label="To"
+              type="date"
+              value={customTo || ''}
+              onChange={(e) => setCustomTo(e.target.value)}
+              slotProps={{ inputLabel: { shrink: true } }}
+              size={size}
+              fullWidth
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCustomCancel}>Cancel</Button>
+          <Button variant="contained" onClick={handleCustomApply}>
+            Apply
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Stack>
   );
 }
