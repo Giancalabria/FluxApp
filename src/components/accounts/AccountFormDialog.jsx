@@ -16,20 +16,22 @@ import {
   useTheme,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/CloseRounded';
-import { CURRENCIES } from '../../constants';
+import { useCurrencies } from '../../hooks/useCurrencies';
 
-const empty = { name: '', currency: 'ARS', balance: '' };
+const empty = { name: '', currency_code: 'ARS', balance: '' };
 
 export default function AccountFormDialog({ open, onClose, onSave, initial }) {
   const [form, setForm] = useState(empty);
+  const { currencies } = useCurrencies();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
     if (open) {
+      const curr = initial?.currency_code ?? initial?.currency ?? 'ARS';
       setForm(
         initial
-          ? { name: initial.name, currency: initial.currency, balance: String(initial.balance) }
+          ? { name: initial.name, currency_code: curr, balance: String(initial.balance) }
           : empty
       );
     }
@@ -67,7 +69,6 @@ export default function AccountFormDialog({ open, onClose, onSave, initial }) {
       }}
     >
       <form onSubmit={handleSubmit}>
-      {/* Mobile: full-screen header */}
       {isMobile ? (
         <AppBar position="sticky" elevation={0} sx={{ bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider' }}>
           <Toolbar>
@@ -101,14 +102,14 @@ export default function AccountFormDialog({ open, onClose, onSave, initial }) {
 
           <TextField
             label="Currency"
-            name="currency"
-            value={form.currency}
+            name="currency_code"
+            value={form.currency_code}
             onChange={handleChange}
             select
             required
             fullWidth
           >
-            {CURRENCIES.map((c) => (
+            {currencies.map((c) => (
               <MenuItem key={c.code} value={c.code}>
                 {c.symbol} — {c.name}
               </MenuItem>
@@ -134,7 +135,6 @@ export default function AccountFormDialog({ open, onClose, onSave, initial }) {
         </Stack>
       </DialogContent>
 
-      {/* Desktop-only bottom actions */}
       {!isMobile && (
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={onClose} color="inherit">

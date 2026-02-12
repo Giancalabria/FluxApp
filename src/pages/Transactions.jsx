@@ -34,7 +34,6 @@ import { useCategories } from '../hooks/useCategories';
 import { formatCurrency, formatDate } from '../lib/formatters';
 import { getPresetRange } from '../lib/dateRangePresets';
 import { TRANSACTION_TYPES, TRANSACTION_TYPE_OPTIONS } from '../constants';
-import { exchangeRateService } from '../services/exchangeRateService';
 import TransactionFormDialog from '../components/transactions/TransactionFormDialog';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import EmptyState from '../components/common/EmptyState';
@@ -69,20 +68,6 @@ export default function Transactions() {
 
   const handleSave = async (values) => {
     if (user?.id) values.user_id = user.id;
-    const account = accounts.find((a) => a.id === values.account_id);
-    if (account) {
-      try {
-        const { rate } = await exchangeRateService.getUsdArsRate();
-        const amountUsd = exchangeRateService.convertToUsd(
-          values.amount,
-          account.currency,
-          rate
-        );
-        if (amountUsd != null) values.amount_usd = Math.round(amountUsd * 10000) / 10000;
-      } catch {
-        // If rate fetch fails, leave amount_usd null; totals will fall back to current rate
-      }
-    }
     await createTransaction(values);
     setFormOpen(false);
   };
@@ -117,7 +102,6 @@ export default function Transactions() {
         </Alert>
       )}
 
-      {/* Filter bar */}
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 2 }} alignItems={{ sm: 'center' }}>
         <DateRangeFilter value={dateRange} onChange={setDateRange} />
         <TextField
@@ -165,12 +149,10 @@ export default function Transactions() {
                   divider
                   sx={{ px: { xs: 1, sm: 2 }, py: 1.5, alignItems: 'flex-start' }}
                 >
-                  {/* Icon */}
                   <ListItemIcon sx={{ minWidth: 36, mt: 0.5 }}>
                     {txIcon(t.type)}
                   </ListItemIcon>
 
-                  {/* Text content — stacks description, date, chip, and amount */}
                   <ListItemText
                     disableTypography
                     primary={
@@ -203,13 +185,12 @@ export default function Transactions() {
                           }}
                         >
                           {t.type === TRANSACTION_TYPES.EXPENSE ? '−' : '+'}{' '}
-                          {formatCurrency(t.amount, t.account?.currency)}
+                          {formatCurrency(t.amount, t.account?.currency_code ?? t.account?.currency)}
                         </Typography>
                       </Box>
                     }
                   />
 
-                  {/* Delete button */}
                   <ListItemSecondaryAction>
                     <Tooltip title="Delete">
                       <IconButton
@@ -230,7 +211,6 @@ export default function Transactions() {
         </Card>
       )}
 
-      {/* FAB — disabled when there are no accounts */}
       <Tooltip title={hasAccounts ? 'Add transaction' : 'Create an account first'}>
         <span style={{ position: 'fixed', bottom: 'auto', right: 24, zIndex: 1050 }}>
           <Fab
@@ -248,7 +228,6 @@ export default function Transactions() {
         </span>
       </Tooltip>
 
-      {/* Form dialog */}
       <TransactionFormDialog
         open={formOpen}
         onClose={() => setFormOpen(false)}
@@ -257,7 +236,6 @@ export default function Transactions() {
         categories={categories}
       />
 
-      {/* Confirm delete */}
       <ConfirmDialog
         open={!!deleteTarget}
         title="Delete Transaction"

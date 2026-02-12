@@ -11,6 +11,8 @@ import {
   InputAdornment,
   IconButton,
   CircularProgress,
+  Switch,
+  FormControlLabel,
 } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/VisibilityRounded';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOffRounded';
@@ -36,6 +38,24 @@ export default function Settings() {
   const [passwordSaving, setPasswordSaving] = useState(false);
   const [passwordError, setPasswordError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState(false);
+
+  const SHOW_TOTAL_USD_KEY = 'finanzas_show_total_usd';
+  const [showTotalUsd, setShowTotalUsd] = useState(() => {
+    try {
+      const v = localStorage.getItem(SHOW_TOTAL_USD_KEY);
+      return v !== 'false';
+    } catch {
+      return true;
+    }
+  });
+
+  const handleShowTotalUsdChange = (e) => {
+    const checked = e.target.checked;
+    setShowTotalUsd(checked);
+    try {
+      localStorage.setItem(SHOW_TOTAL_USD_KEY, String(checked));
+    } catch {}
+  };
 
   useEffect(() => {
     if (profile?.username != null && username === '') setUsername(profile.username);
@@ -95,7 +115,6 @@ export default function Settings() {
         Settings
       </Typography>
 
-      {/* Username */}
       <Card sx={{ mb: 2 }}>
         <CardContent>
           <Typography variant="subtitle2" color="text.secondary" gutterBottom>
@@ -139,7 +158,6 @@ export default function Settings() {
         </CardContent>
       </Card>
 
-      {/* Email */}
       <Card sx={{ mb: 2 }}>
         <CardContent>
           <Typography variant="subtitle2" color="text.secondary" gutterBottom>
@@ -173,7 +191,27 @@ export default function Settings() {
         </CardContent>
       </Card>
 
-      {/* Password */}
+      <Card sx={{ mb: 2 }}>
+        <CardContent>
+          <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+            Dashboard
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            Show total balance in USD on the Dashboard (converted from all currencies using current rate).
+          </Typography>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={showTotalUsd}
+                onChange={handleShowTotalUsdChange}
+                color="primary"
+              />
+            }
+            label="Show total balance (USD)"
+          />
+        </CardContent>
+      </Card>
+
       <Card>
         <CardContent>
           <Typography variant="subtitle2" color="text.secondary" gutterBottom>

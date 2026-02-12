@@ -1,4 +1,3 @@
-// ─── Supported currencies ────────────────────────────────────────────────────
 export const CURRENCIES = [
   { code: 'ARS', name: 'Argentine Peso', symbol: '$' },
   { code: 'USD', name: 'US Dollar', symbol: 'US$' },
@@ -6,7 +5,6 @@ export const CURRENCIES = [
   {code: 'USDC', name: 'USD Coin', symbol: 'USDC'},
 ];
 
-// ─── Transaction types ──────────────────────────────────────────────────────
 export const TRANSACTION_TYPES = {
   INCOME: 'income',
   EXPENSE: 'expense',
@@ -19,7 +17,6 @@ export const TRANSACTION_TYPE_OPTIONS = [
   { value: 'transfer', label: 'Transfer', color: 'secondary' },
 ];
 
-// ─── Expense classification ─────────────────────────────────────────────────
 export const EXPENSE_CLASSIFICATIONS = {
   FIXED: 'fixed',
   VARIABLE: 'variable',
@@ -32,7 +29,6 @@ export const EXPENSE_CLASS_OPTIONS = [
   { value: 'essential', label: 'Essential', description: 'Mandatory but variable (groceries, transport)' },
 ];
 
-// ─── Default categories ─────────────────────────────────────────────────────
 export const DEFAULT_CATEGORIES = [
   { name: 'Rent', classification: 'fixed' },
   { name: 'Insurance', classification: 'fixed' },

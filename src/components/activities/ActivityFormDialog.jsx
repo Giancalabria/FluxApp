@@ -16,12 +16,13 @@ import {
   useTheme,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/CloseRounded';
-import { CURRENCIES } from '../../constants';
+import { useCurrencies } from '../../hooks/useCurrencies';
 
 const empty = { name: '', currency: 'ARS' };
 
 export default function ActivityFormDialog({ open, onClose, onSave }) {
   const [form, setForm] = useState(empty);
+  const { currencies } = useCurrencies();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -90,7 +91,7 @@ export default function ActivityFormDialog({ open, onClose, onSave }) {
             required
             fullWidth
           >
-            {CURRENCIES.map((c) => (
+            {currencies.map((c) => (
               <MenuItem key={c.code} value={c.code}>
                 {c.symbol} — {c.name}
               </MenuItem>

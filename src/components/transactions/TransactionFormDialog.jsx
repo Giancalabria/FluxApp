@@ -35,6 +35,7 @@ const emptyForm = {
   classification: '',
   date: todayLocal(),
   exchange_rate: '',
+  exchange_rate_snapshot: '',
 };
 
 export default function TransactionFormDialog({ open, onClose, onSave, accounts, categories }) {
@@ -48,24 +49,28 @@ export default function TransactionFormDialog({ open, onClose, onSave, accounts,
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'amount' || name === 'exchange_rate') {
+    if (name === 'account_id') {
+      setForm((prev) => ({ ...prev, [name]: value, exchange_rate_snapshot: '', exchange_rate: '' }));
+      return;
+    }
+    if (name === 'amount' || name === 'exchange_rate' || name === 'exchange_rate_snapshot') {
       const n = parseFloat(value);
       if (value !== '' && !isNaN(n) && n < 0) return setForm((prev) => ({ ...prev, [name]: '0' }));
     }
     setForm((prev) => ({ ...prev, [name]: value }));
   };
   const handleTypeChange = (_, val) => {
-    if (val) setForm((prev) => ({ ...prev, type: val, to_account_id: '', exchange_rate: '' }));
+    if (val) setForm((prev) => ({ ...prev, type: val, to_account_id: '', exchange_rate: '', exchange_rate_snapshot: '' }));
   };
 
-  // Determine if transfer involves different currencies
+  const fromCurrency = (acc) => acc?.currency_code ?? acc?.currency;
   const fromAccount = accounts.find((a) => a.id === form.account_id);
   const toAccount = accounts.find((a) => a.id === form.to_account_id);
   const needsExchangeRate =
     form.type === TRANSACTION_TYPES.TRANSFER &&
     fromAccount &&
     toAccount &&
-    fromAccount.currency !== toAccount.currency;
+    fromCurrency(fromAccount) !== fromCurrency(toAccount);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -77,6 +82,12 @@ export default function TransactionFormDialog({ open, onClose, onSave, accounts,
       description: form.description,
       date: form.date,
     };
+
+    if (fromAccount) {
+      payload.currency_code = fromCurrency(fromAccount);
+      const isUsd = payload.currency_code === 'USD';
+      payload.exchange_rate_snapshot = isUsd ? 1 : (parseFloat(form.exchange_rate_snapshot) || null);
+    }
 
     if (form.type === TRANSACTION_TYPES.EXPENSE) {
       payload.category_id = form.category_id || null;
@@ -115,7 +126,6 @@ export default function TransactionFormDialog({ open, onClose, onSave, accounts,
       }}
     >
       <form onSubmit={handleSubmit}>
-      {/* Mobile: full-screen header bar */}
       {isMobile ? (
         <AppBar position="sticky" elevation={0} sx={{ bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider' }}>
           <Toolbar>
@@ -136,7 +146,6 @@ export default function TransactionFormDialog({ open, onClose, onSave, accounts,
 
       <DialogContent sx={{ pt: isMobile ? 3 : undefined }}>
         <Stack spacing={2.5} sx={{ mt: isMobile ? 0 : 1 }}>
-          {/* Type toggle */}
           <ToggleButtonGroup
             value={form.type}
             exclusive
@@ -155,7 +164,6 @@ export default function TransactionFormDialog({ open, onClose, onSave, accounts,
             </ToggleButton>
           </ToggleButtonGroup>
 
-          {/* From account */}
           <TextField
             label={isTransfer ? 'From Account' : 'Account'}
             name="account_id"
@@ -167,12 +175,32 @@ export default function TransactionFormDialog({ open, onClose, onSave, accounts,
           >
             {accounts.map((a) => (
               <MenuItem key={a.id} value={a.id}>
-                {a.name} ({a.currency})
+                {a.name} ({fromCurrency(a)})
               </MenuItem>
             ))}
           </TextField>
 
-          {/* To account (transfer only) */}
+          {fromAccount && fromCurrency(fromAccount) !== 'USD' && (
+            <TextField
+              label={`Tipo de cambio (1 USD = ? ${fromCurrency(fromAccount)})`}
+              name="exchange_rate_snapshot"
+              type="number"
+              value={form.exchange_rate_snapshot}
+              onChange={handleChange}
+              slotProps={{ htmlInput: { step: '0.000001', min: 0 } }}
+              required
+              fullWidth
+              helperText="Valor de 1 USD en la moneda de la cuenta al momento de la transacción."
+              sx={{
+                '& input[type="number"]': { MozAppearance: 'textfield' },
+                '& input[type="number"]::-webkit-outer-spin-button, & input[type="number"]::-webkit-inner-spin-button': {
+                  WebkitAppearance: 'none',
+                  margin: 0,
+                },
+              }}
+            />
+          )}
+
           {isTransfer && (
             <TextField
               label="To Account"
@@ -187,21 +215,20 @@ export default function TransactionFormDialog({ open, onClose, onSave, accounts,
                 .filter((a) => a.id !== form.account_id)
                 .map((a) => (
                   <MenuItem key={a.id} value={a.id}>
-                    {a.name} ({a.currency})
+                    {a.name} ({fromCurrency(a)})
                   </MenuItem>
                 ))}
             </TextField>
           )}
 
-          {/* Exchange rate warning + field */}
           {needsExchangeRate && (
             <>
               <Alert severity="info" variant="outlined" sx={{ fontSize: '0.85rem' }}>
-                Different currencies ({fromAccount.currency} → {toAccount.currency}).
+                Different currencies ({fromCurrency(fromAccount)} → {fromCurrency(toAccount)}).
                 Enter the exchange rate below.
               </Alert>
               <TextField
-                label={`1 ${fromAccount.currency} = ? ${toAccount.currency}`}
+                label={`1 ${fromCurrency(fromAccount)} = ? ${fromCurrency(toAccount)}`}
                 name="exchange_rate"
                 type="number"
                 value={form.exchange_rate}
@@ -219,15 +246,14 @@ export default function TransactionFormDialog({ open, onClose, onSave, accounts,
               />
               {form.exchange_rate && form.amount && (
                 <Typography variant="body2" color="text.secondary">
-                  {fromAccount.currency} {parseFloat(form.amount).toFixed(2)} ≈{' '}
-                  {toAccount.currency}{' '}
+                  {fromCurrency(fromAccount)} {parseFloat(form.amount).toFixed(2)} ≈{' '}
+                  {fromCurrency(toAccount)}{' '}
                   {(parseFloat(form.amount) * parseFloat(form.exchange_rate)).toFixed(2)}
                 </Typography>
               )}
             </>
           )}
 
-          {/* Amount */}
           <TextField
             label="Amount"
             name="amount"
@@ -246,7 +272,6 @@ export default function TransactionFormDialog({ open, onClose, onSave, accounts,
             }}
           />
 
-          {/* Description */}
           <TextField
             label="Description"
             name="description"
@@ -256,7 +281,6 @@ export default function TransactionFormDialog({ open, onClose, onSave, accounts,
             fullWidth
           />
 
-          {/* Date */}
           <TextField
             label="Date"
             name="date"
@@ -268,7 +292,6 @@ export default function TransactionFormDialog({ open, onClose, onSave, accounts,
             slotProps={{ inputLabel: { shrink: true } }}
           />
 
-          {/* Category (income & expense) */}
           {!isTransfer && (
             <TextField
               label="Category"
@@ -289,7 +312,6 @@ export default function TransactionFormDialog({ open, onClose, onSave, accounts,
             </TextField>
           )}
 
-          {/* Classification (expense only) */}
           {isExpense && (
             <TextField
               label="Classification"
@@ -312,7 +334,6 @@ export default function TransactionFormDialog({ open, onClose, onSave, accounts,
         </Stack>
       </DialogContent>
 
-      {/* Desktop-only bottom actions (mobile uses the top bar Save button) */}
       {!isMobile && (
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={onClose} color="inherit">

@@ -21,7 +21,6 @@ export default function AppLayout() {
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100dvh' }}>
-      {/* ─── Sidebar (desktop: permanent, mobile: temporary drawer) ─── */}
       {isDesktop ? (
         <Drawer
           variant="permanent"
@@ -58,7 +57,6 @@ export default function AppLayout() {
         </Drawer>
       )}
 
-      {/* ─── Main content ─── */}
       <Box
         component="main"
         sx={{
@@ -68,21 +66,18 @@ export default function AppLayout() {
           minHeight: '100dvh',
           width: '100%',
           overflow: 'hidden',
-          // Pad bottom: nav bar height (60px) + safe-area + breathing room
           pb: {
             xs: 'calc(60px + env(safe-area-inset-bottom, 0px) + 8px)',
             md: 0,
           },
         }}
       >
-        {/* Mobile top bar */}
         {!isDesktop && <TopBar onMenuClick={handleDrawerToggle} />}
 
         <Box
           sx={{
             flexGrow: 1,
             p: { xs: 2, sm: 3 },
-            // Prevent horizontal overflow on mobile
             overflow: 'auto',
             WebkitOverflowScrolling: 'touch',
           }}
@@ -91,7 +86,6 @@ export default function AppLayout() {
         </Box>
       </Box>
 
-      {/* ─── Bottom navigation (mobile only) ─── */}
       {!isDesktop && <BottomNav />}
     </Box>
   );

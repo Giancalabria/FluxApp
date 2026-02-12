@@ -19,7 +19,6 @@ import VisibilityIcon from '@mui/icons-material/VisibilityRounded';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOffRounded';
 import { useAuth } from '../context/AuthContext';
 
-/** True when the app is already opened as installed PWA (no browser UI). */
 function isStandalone() {
   if (typeof window === 'undefined') return true;
   return (
@@ -42,7 +41,6 @@ export default function Login() {
   const [info, setInfo] = useState('');
   const [showInstallHint, setShowInstallHint] = useState(false);
 
-  // Redirect authenticated users to dashboard
   useEffect(() => {
     if (!authLoading && user) {
       navigate('/dashboard', { replace: true });
@@ -100,7 +98,7 @@ export default function Login() {
   }
 
   if (user) {
-    return null; // Redirect is in progress
+    return null;
   }
 
   return (

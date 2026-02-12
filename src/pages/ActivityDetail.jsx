@@ -104,7 +104,6 @@ export default function ActivityDetail() {
         <Chip label={currency} size="small" color="primary" variant="outlined" />
       </Box>
 
-      {/* Members */}
       <Box sx={{ mb: 2 }}>
         <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
           People
@@ -134,7 +133,6 @@ export default function ActivityDetail() {
         <Tab label="Settle up" id="activity-tab-1" aria-controls="activity-tabpanel-1" />
       </Tabs>
 
-      {/* Tab 0: Expenses */}
       <Box role="tabpanel" hidden={tab !== 0} id="activity-tabpanel-0" aria-labelledby="activity-tab-0">
         {tab === 0 && (
           <>
@@ -195,7 +193,6 @@ export default function ActivityDetail() {
         )}
       </Box>
 
-      {/* Tab 1: Settle up — implemented in next step */}
       <Box role="tabpanel" hidden={tab !== 1} id="activity-tabpanel-1" aria-labelledby="activity-tab-1">
         {tab === 1 && (
           <SettleUpPanel members={members} expenses={expenses} currency={currency} />
@@ -239,7 +236,6 @@ export default function ActivityDetail() {
   );
 }
 
-/** Settle up tab content: run settlement and show "X should pay Y ... amount" */
 function SettleUpPanel({ members, expenses, currency }) {
   const splits = expenses.flatMap((e) =>
     (e.expense_splits || []).map((s) => ({

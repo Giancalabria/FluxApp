@@ -25,12 +25,10 @@ import EmptyState from '../components/common/EmptyState';
 export default function Accounts() {
   const { accounts, loading, createAccount, updateAccount, deleteAccount } = useAccounts();
 
-  // Dialog state
   const [formOpen, setFormOpen] = useState(false);
-  const [editing, setEditing] = useState(null);          // null = new, object = edit
-  const [deleteTarget, setDeleteTarget] = useState(null); // account to delete
+  const [editing, setEditing] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
-  // ── Create / Update ──────────────────────────────────────────────────────
   const handleSave = async (values) => {
     if (editing) {
       await updateAccount(editing.id, values);
@@ -51,13 +49,11 @@ export default function Accounts() {
     setFormOpen(true);
   };
 
-  // ── Delete ────────────────────────────────────────────────────────────────
   const handleDelete = async () => {
     if (deleteTarget) await deleteAccount(deleteTarget.id);
     setDeleteTarget(null);
   };
 
-  // ── Loading skeleton ─────────────────────────────────────────────────────
   if (loading) {
     return (
       <Box>
@@ -102,10 +98,10 @@ export default function Accounts() {
                     <Typography variant="subtitle1" fontWeight={600}>
                       {acc.name}
                     </Typography>
-                    <Chip label={acc.currency} size="small" color="primary" variant="outlined" />
+                    <Chip label={acc.currency_code ?? acc.currency} size="small" color="primary" variant="outlined" />
                   </Box>
                   <Typography variant="h5" fontWeight={700} sx={{ mt: 2 }}>
-                    {formatCurrency(acc.balance, acc.currency)}
+                    {formatCurrency(acc.balance, acc.currency_code ?? acc.currency)}
                   </Typography>
                 </CardContent>
                 <CardActions sx={{ justifyContent: 'flex-end' }}>
@@ -126,7 +122,6 @@ export default function Accounts() {
         </Grid>
       )}
 
-      {/* FAB to add new account */}
       <Fab
         color="primary"
         onClick={openNew}
@@ -139,7 +134,6 @@ export default function Accounts() {
         <AddIcon />
       </Fab>
 
-      {/* Form dialog */}
       <AccountFormDialog
         open={formOpen}
         onClose={() => { setFormOpen(false); setEditing(null); }}
@@ -147,7 +141,6 @@ export default function Accounts() {
         initial={editing}
       />
 
-      {/* Confirm delete */}
       <ConfirmDialog
         open={!!deleteTarget}
         title="Delete Account"

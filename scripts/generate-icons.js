@@ -1,17 +1,7 @@
-/**
- * Generate PWA icon PNGs from scratch (no dependencies).
- *
- * Usage: node scripts/generate-icons.js
- *
- * Creates dark-navy icons with a sky-blue "F" letter.
- * For production, replace these with properly designed icons.
- */
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { deflateSync } from 'node:zlib';
 
-// ── Minimal PNG encoder ────────────────────────────────────────────────────
 function createPNG(width, height, bgR, bgG, bgB) {
-  // Create raw pixel data (RGBA) — filled with background
   const pixels = Buffer.alloc(width * height * 4);
   for (let i = 0; i < width * height; i++) {
     pixels[i * 4] = bgR;
@@ -20,7 +10,6 @@ function createPNG(width, height, bgR, bgG, bgB) {
     pixels[i * 4 + 3] = 255;
   }
 
-  // Draw "F" letter in the center (sky-blue #38BDF8)
   const lr = 0x38, lg = 0xBD, lb = 0xF8;
   const m = Math.floor(width * 0.28);
   const bw = Math.max(Math.floor(width * 0.09), 2);
@@ -45,7 +34,6 @@ function createPNG(width, height, bgR, bgG, bgB) {
     }
   }
 
-  // Build PNG
   const rawData = Buffer.alloc(height * (1 + width * 4));
   for (let y = 0; y < height; y++) {
     rawData[y * (1 + width * 4)] = 0;
@@ -84,7 +72,6 @@ function makeChunk(type, data) {
   return Buffer.concat([len, typeB, data, crcBuf]);
 }
 
-// ── Generate ────────────────────────────────────────────────────────────────
 mkdirSync('public', { recursive: true });
 
 const sizes = [

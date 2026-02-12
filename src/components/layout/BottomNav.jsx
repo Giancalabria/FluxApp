@@ -30,7 +30,6 @@ export default function BottomNav() {
         zIndex: (t) => t.zIndex.appBar,
         borderTop: '1px solid',
         borderColor: 'divider',
-        // Safe-area padding for notched phones (iPhone X+, etc.)
         pb: 'env(safe-area-inset-bottom, 0px)',
       }}
       elevation={8}

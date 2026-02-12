@@ -1,9 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { profileService } from '../services/profileService';
 
-/**
- * Profile for the current user (username). Creates a profile row if missing (e.g. existing user).
- */
 export function useProfile(userId) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);

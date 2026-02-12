@@ -38,7 +38,6 @@ export default function Sidebar({ onClose }) {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* Logo */}
       <Box sx={{ px: 3, py: 3 }}>
         <Typography variant="h5" fontWeight={800} color="primary">
           FluxApp
@@ -50,7 +49,6 @@ export default function Sidebar({ onClose }) {
 
       <Divider />
 
-      {/* Nav links */}
       <List sx={{ flexGrow: 1, px: 1, pt: 1 }}>
         {NAV_ITEMS.map(({ path, label, icon }) => {
           const active = pathname === path;
@@ -79,7 +77,6 @@ export default function Sidebar({ onClose }) {
 
       <Divider />
 
-      {/* Sign out */}
       <List sx={{ px: 1, pb: 1 }}>
         <ListItemButton
           onClick={signOut}

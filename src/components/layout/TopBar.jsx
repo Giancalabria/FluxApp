@@ -10,7 +10,6 @@ export default function TopBar({ onMenuClick }) {
         bgcolor: 'background.paper',
         borderBottom: '1px solid',
         borderColor: 'divider',
-        // Respect notch / status-bar on iOS standalone mode
         pt: 'env(safe-area-inset-top, 0px)',
       }}
     >

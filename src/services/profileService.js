@@ -1,7 +1,6 @@
 import { supabase } from '../lib/supabase';
 
 export const profileService = {
-  /** Get profile by user id (current user only via RLS). */
   async getByUserId(userId) {
     if (!userId) return { data: null, error: null };
     const { data, error } = await supabase
@@ -12,7 +11,6 @@ export const profileService = {
     return { data, error };
   },
 
-  /** Create profile (e.g. for existing users who don't have one yet). */
   async create(profile) {
     const { data, error } = await supabase
       .from('profiles')
@@ -22,7 +20,6 @@ export const profileService = {
     return { data, error };
   },
 
-  /** Update username. */
   async updateUsername(userId, username) {
     const trimmed = String(username).trim();
     if (trimmed.length < 2 || trimmed.length > 32) {

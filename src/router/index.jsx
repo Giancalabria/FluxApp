@@ -11,7 +11,6 @@ import Login from "../pages/Login";
 import { useAuth } from "../context/AuthContext";
 import { Box, CircularProgress } from "@mui/material";
 
-/** Wrapper that redirects to /login when not authenticated. */
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
 
@@ -37,10 +36,8 @@ function ProtectedRoute({ children }) {
 export default function AppRouter() {
   return (
     <Routes>
-      {/* Public */}
-      <Route path="/login" element={<Login />} />
+      <Route path="/login" element={<Login />}       />
 
-      {/* Protected — known app routes wrapped in auth check + layout */}
       <Route
         element={
           <ProtectedRoute>

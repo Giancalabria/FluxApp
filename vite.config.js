@@ -45,7 +45,6 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // Cache the Google Fonts stylesheet & font files for offline use
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

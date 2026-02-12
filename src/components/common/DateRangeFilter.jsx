@@ -38,7 +38,7 @@ export default function DateRangeFilter({ value, onChange, size = 'small', sx })
     }
     const r = getPresetRange(presetValue);
     if (r) onChange(r);
-    else onChange({ dateFrom: null, dateTo: null }); // all_time
+    else onChange({ dateFrom: null, dateTo: null });
   };
 
   const handleCustomApply = () => {

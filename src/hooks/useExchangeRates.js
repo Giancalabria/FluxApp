@@ -2,10 +2,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { exchangeRateService } from '../services/exchangeRateService';
 import { toISODate } from '../lib/dateRangePresets';
 
-/**
- * Hook for USD/ARS rate (dólar blue) and helpers to convert amounts to USD.
- * Used to show total balance in USD and normalize income/expenses.
- */
 export function useExchangeRates() {
   const [usdArsRate, setUsdArsRate] = useState(null);
   const [updatedAt, setUpdatedAt] = useState(null);
@@ -38,16 +34,14 @@ export function useExchangeRates() {
     [usdArsRate]
   );
 
-  /**
-   * Total balance in USD from a list of accounts { balance, currency }.
-   */
   const totalBalanceUsd = useCallback(
     (accounts) => {
       if (!accounts?.length) return null;
       let total = 0;
       let hasUnknown = false;
       for (const a of accounts) {
-        const usd = convertToUsd(Number(a.balance || 0), a.currency);
+        const currency = a.currency_code ?? a.currency;
+        const usd = convertToUsd(Number(a.balance || 0), currency);
         if (usd != null) total += usd;
         else hasUnknown = true;
       }
@@ -56,12 +50,6 @@ export function useExchangeRates() {
     [convertToUsd]
   );
 
-  /**
-   * Sum income and expense for the current month in USD.
-   * Uses stored amount_usd when present (rate at transaction time); otherwise
-   * falls back to current rate for older data that didn't have amount_usd.
-   * transactions: array of { type, amount, date, amount_usd?, account?: { currency } }
-   */
   const monthTotalsUsd = useCallback(
     (transactions) => {
       const now = new Date();
@@ -71,10 +59,11 @@ export function useExchangeRates() {
       for (const t of transactions || []) {
         if (t.date < monthStart) continue;
         let usd = null;
-        if (t.amount_usd != null && Number.isFinite(Number(t.amount_usd))) {
-          usd = Number(t.amount_usd);
+        const storedUsd = t.amount_in_usd ?? t.amount_usd;
+        if (storedUsd != null && Number.isFinite(Number(storedUsd))) {
+          usd = Number(storedUsd);
         } else {
-          const currency = t.account?.currency || 'ARS';
+          const currency = t.account?.currency_code ?? t.account?.currency || 'ARS';
           usd = convertToUsd(Number(t.amount || 0), currency);
         }
         if (usd == null) continue;

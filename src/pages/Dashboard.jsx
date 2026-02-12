@@ -26,7 +26,6 @@ import { useExchangeRates } from '../hooks/useExchangeRates';
 import { formatCurrency, formatDate } from '../lib/formatters';
 import { TRANSACTION_TYPES } from '../constants';
 
-// ─── Stat card ──────────────────────────────────────────────────────────────
 function StatCard({ label, value, color, icon }) {
   return (
     <Card>
@@ -69,7 +68,6 @@ function StatCard({ label, value, color, icon }) {
   );
 }
 
-// ─── Transaction type icon helper ───────────────────────────────────────────
 function txIcon(type) {
   if (type === TRANSACTION_TYPES.INCOME) return <TrendingUpIcon color="success" />;
   if (type === TRANSACTION_TYPES.EXPENSE) return <TrendingDownIcon color="error" />;
@@ -82,7 +80,6 @@ function txColor(type) {
   return 'secondary.main';
 }
 
-// ─── Page ───────────────────────────────────────────────────────────────────
 export default function Dashboard() {
   const navigate = useNavigate();
   const { accounts, loading: accLoading } = useAccounts();
@@ -91,24 +88,29 @@ export default function Dashboard() {
 
   const loading = accLoading || txLoading;
 
-  // Compute totals per currency
+  const showTotalUsd = (() => {
+    try {
+      return typeof localStorage !== 'undefined' && localStorage.getItem('finanzas_show_total_usd') !== 'false';
+    } catch {
+      return true;
+    }
+  })();
+
   const balanceByCurrency = useMemo(() => {
     const map = {};
     accounts.forEach((a) => {
-      map[a.currency] = (map[a.currency] || 0) + Number(a.balance || 0);
+      const c = a.currency_code ?? a.currency;
+      map[c] = (map[c] || 0) + Number(a.balance || 0);
     });
     return map;
   }, [accounts]);
 
-  // Total balance in USD (ARS converted at dólar blue; USD, USDT, USDC = 1:1)
   const totalUsd = useMemo(() => totalBalanceUsd(accounts), [accounts, totalBalanceUsd]);
 
-  // This month's income & expense in USD (normalized for comparison / inflation)
   const monthUsd = useMemo(() => monthTotalsUsd(transactions), [transactions, monthTotalsUsd]);
 
   const recentTx = transactions.slice(0, 6);
 
-  // ─── Skeleton while loading ───────────────────────────────────────────────
   if (loading) {
     return (
       <Box>
@@ -132,39 +134,38 @@ export default function Dashboard() {
         Dashboard
       </Typography>
 
-      {/* ── Summary cards ──────────────────────────────────────────────────── */}
       <Grid container spacing={1.5} sx={{ mb: 3 }}>
-        {/* Total balance in USD (all currencies converted; ARS = dólar blue) */}
-        <Grid size={{ xs: 12, sm: 4 }}>
-          <Tooltip
-            title={
-              rateError
-                ? rateError
-                : usdArsRate != null
-                  ? `1 USD ≈ ${Number(usdArsRate).toLocaleString('es-AR')} ARS (dólar blue). USD, USDT, USDC = 1:1.`
-                  : 'Loading rate from DolarAPI (dólar blue)…'
-            }
-          >
-            <Box component="span" sx={{ display: 'block' }}>
-              <StatCard
-                label={rateLoading ? 'Total (USD) …' : 'Total balance (USD)'}
-                value={
-                  rateLoading
-                    ? '…'
-                    : totalUsd != null
-                      ? formatCurrency(totalUsd, 'USD')
-                      : rateError
-                        ? '—'
-                        : '—'
-                }
-                color="primary"
-                icon={<AttachMoneyIcon />}
-              />
-            </Box>
-          </Tooltip>
-        </Grid>
+        {showTotalUsd && (
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <Tooltip
+              title={
+                rateError
+                  ? rateError
+                  : usdArsRate != null
+                    ? `1 USD ≈ ${Number(usdArsRate).toLocaleString('es-AR')} ARS (dólar blue). USD, USDT, USDC = 1:1.`
+                    : 'Loading rate from DolarAPI (dólar blue)…'
+              }
+            >
+              <Box component="span" sx={{ display: 'block' }}>
+                <StatCard
+                  label={rateLoading ? 'Total (USD) …' : 'Total balance (USD)'}
+                  value={
+                    rateLoading
+                      ? '…'
+                      : totalUsd != null
+                        ? formatCurrency(totalUsd, 'USD')
+                        : rateError
+                          ? '—'
+                          : '—'
+                  }
+                  color="primary"
+                  icon={<AttachMoneyIcon />}
+                />
+              </Box>
+            </Tooltip>
+          </Grid>
+        )}
 
-        {/* One card per currency balance */}
         {Object.entries(balanceByCurrency).map(([currency, total]) => (
           <Grid size={{ xs: 12, sm: 4 }} key={currency}>
             <StatCard
@@ -176,7 +177,6 @@ export default function Dashboard() {
           </Grid>
         ))}
 
-        {/* If no accounts yet, show a placeholder card */}
         {Object.keys(balanceByCurrency).length === 0 && (
           <Grid size={{ xs: 12, sm: 4 }}>
             <StatCard
@@ -215,7 +215,6 @@ export default function Dashboard() {
         </Grid>
       </Grid>
 
-      {/* ── Recent transactions ────────────────────────────────────────────── */}
       <Card>
         <CardContent sx={{ px: { xs: 1.5, sm: 2 }, py: 2 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, px: { xs: 0.5, sm: 0 } }}>
@@ -247,7 +246,7 @@ export default function Dashboard() {
                   <Box sx={{ textAlign: 'right', flexShrink: 0, ml: 1 }}>
                     <Typography variant="body2" fontWeight={600} sx={{ color: txColor(t.type) }} noWrap>
                       {t.type === TRANSACTION_TYPES.EXPENSE ? '− ' : '+ '}
-                      {formatCurrency(t.amount, t.account?.currency)}
+                      {formatCurrency(t.amount, t.account?.currency_code ?? t.account?.currency)}
                     </Typography>
                   </Box>
                 </ListItem>
