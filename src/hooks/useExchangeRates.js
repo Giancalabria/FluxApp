@@ -63,7 +63,7 @@ export function useExchangeRates() {
         if (storedUsd != null && Number.isFinite(Number(storedUsd))) {
           usd = Number(storedUsd);
         } else {
-          const currency = t.account?.currency_code ?? t.account?.currency || 'ARS';
+          const currency = (t.account?.currency_code ?? t.account?.currency) || 'ARS';
           usd = convertToUsd(Number(t.amount || 0), currency);
         }
         if (usd == null) continue;
