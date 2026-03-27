@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
   Alert,
   Box,
@@ -18,55 +18,70 @@ import {
   TextField,
   MenuItem,
   Tooltip,
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/AddRounded';
-import DeleteIcon from '@mui/icons-material/DeleteRounded';
-import TrendingUpIcon from '@mui/icons-material/TrendingUpRounded';
-import TrendingDownIcon from '@mui/icons-material/TrendingDownRounded';
-import SwapHorizIcon from '@mui/icons-material/SwapHorizRounded';
-import ReceiptLongIcon from '@mui/icons-material/ReceiptLongRounded';
-import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWalletRounded';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { useFinancialProfile } from '../context/FinancialProfileContext';
-import { useTransactions } from '../hooks/useTransactions';
-import { useAccounts } from '../hooks/useAccounts';
-import { useCategories } from '../hooks/useCategories';
-import { useExchangeRates } from '../hooks/useExchangeRates';
-import { exchangeRateService } from '../services/exchangeRateService';
-import { formatCurrency, formatDate } from '../lib/formatters';
-import { transactionDisplayAmount } from '../lib/transactionDisplay';
-import { getPresetRange } from '../lib/dateRangePresets';
-import { TRANSACTION_TYPES, TRANSACTION_TYPE_OPTIONS } from '../constants';
-import TransactionFormDialog from '../components/transactions/TransactionFormDialog';
-import ConfirmDialog from '../components/common/ConfirmDialog';
-import EmptyState from '../components/common/EmptyState';
-import DateRangeFilter from '../components/common/DateRangeFilter';
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/AddRounded";
+import DeleteIcon from "@mui/icons-material/DeleteRounded";
+import TrendingUpIcon from "@mui/icons-material/TrendingUpRounded";
+import TrendingDownIcon from "@mui/icons-material/TrendingDownRounded";
+import SwapHorizIcon from "@mui/icons-material/SwapHorizRounded";
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLongRounded";
+import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWalletRounded";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { useFinancialProfile } from "../context/FinancialProfileContext";
+import { useTransactions } from "../hooks/useTransactions";
+import { useAccounts } from "../hooks/useAccounts";
+import { useCategories } from "../hooks/useCategories";
+import { useExchangeRates } from "../hooks/useExchangeRates";
+import { exchangeRateService } from "../services/exchangeRateService";
+import { formatCurrency, formatDate } from "../lib/formatters";
+import { transactionDisplayAmount } from "../lib/transactionDisplay";
+import { getPresetRange } from "../lib/dateRangePresets";
+import { TRANSACTION_TYPES, TRANSACTION_TYPE_OPTIONS } from "../constants";
+import TransactionFormDialog from "../components/transactions/TransactionFormDialog";
+import ConfirmDialog from "../components/common/ConfirmDialog";
+import EmptyState from "../components/common/EmptyState";
+import DateRangeFilter from "../components/common/DateRangeFilter";
 
 function txIcon(type) {
-  if (type === TRANSACTION_TYPES.INCOME) return <TrendingUpIcon color="success" />;
-  if (type === TRANSACTION_TYPES.EXPENSE) return <TrendingDownIcon color="error" />;
+  if (type === TRANSACTION_TYPES.INCOME)
+    return <TrendingUpIcon color="success" />;
+  if (type === TRANSACTION_TYPES.EXPENSE)
+    return <TrendingDownIcon color="error" />;
   return <SwapHorizIcon color="secondary" />;
 }
 
-const chipColor = { income: 'success', expense: 'error', transfer: 'secondary' };
+const chipColor = {
+  income: "success",
+  expense: "error",
+  transfer: "secondary",
+};
 
 export default function Transactions() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { activeProfile } = useFinancialProfile();
   const profileId = activeProfile?.id;
-  const profileCcy = activeProfile?.preferred_currency_code ?? 'ARS';
+  const profileCcy = activeProfile?.preferred_currency_code ?? "ARS";
   const { usdArsRate } = useExchangeRates();
-  const [typeFilter, setTypeFilter] = useState('');
-  const [dateRange, setDateRange] = useState(() => getPresetRange('all_time') ?? { dateFrom: null, dateTo: null });
+  const [typeFilter, setTypeFilter] = useState("");
+  const [dateRange, setDateRange] = useState(
+    () => getPresetRange("all_time") ?? { dateFrom: null, dateTo: null },
+  );
   const filters = {
     financialProfileId: profileId,
     ...(typeFilter && { type: typeFilter }),
     ...(dateRange?.dateFrom && { dateFrom: dateRange.dateFrom }),
     ...(dateRange?.dateTo && { dateTo: dateRange.dateTo }),
   };
-  const { transactions, loading, error: txError, clearError, createTransaction, deleteTransaction } = useTransactions(filters);
+  const {
+    transactions,
+    loading,
+    error: txError,
+    clearError,
+    createTransaction,
+    deleteTransaction,
+  } = useTransactions(filters);
   const { accounts, loading: accLoading } = useAccounts(profileId);
   const { categories } = useCategories(profileId);
 
@@ -83,7 +98,7 @@ export default function Transactions() {
       values.amount,
       fromCcy,
       profileCcy,
-      usdArsRate
+      usdArsRate,
     );
     if (amountProfile == null) amountProfile = values.amount;
     values.amount_profile = amountProfile;
@@ -122,7 +137,12 @@ export default function Transactions() {
         </Alert>
       )}
 
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 2 }} alignItems={{ sm: 'center' }}>
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={2}
+        sx={{ mb: 2 }}
+        alignItems={{ sm: "center" }}
+      >
         <DateRangeFilter value={dateRange} onChange={setDateRange} />
         <TextField
           label="Type"
@@ -148,7 +168,7 @@ export default function Transactions() {
             title="No accounts yet"
             subtitle="You need to create an account before you can add transactions."
             actionLabel="Go to Accounts"
-            onAction={() => navigate('/accounts')}
+            onAction={() => navigate("/accounts")}
           />
         ) : (
           <EmptyState
@@ -167,7 +187,11 @@ export default function Transactions() {
                 <ListItem
                   key={t.id}
                   divider
-                  sx={{ px: { xs: 1, sm: 2 }, py: 1.5, alignItems: 'flex-start' }}
+                  sx={{
+                    px: { xs: 1, sm: 2 },
+                    py: 1.5,
+                    alignItems: "flex-start",
+                  }}
                 >
                   <ListItemIcon sx={{ minWidth: 36, mt: 0.5 }}>
                     {txIcon(t.type)}
@@ -180,15 +204,22 @@ export default function Transactions() {
                         <Typography variant="body2" fontWeight={500} noWrap>
                           {t.description || t.type}
                         </Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.25 }}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                            mt: 0.25,
+                          }}
+                        >
                           <Typography variant="caption" color="text.secondary">
                             {formatDate(t.date)}
                           </Typography>
                           <Chip
                             label={t.type}
                             size="small"
-                            color={chipColor[t.type] || 'default'}
-                            sx={{ height: 20, fontSize: '0.65rem' }}
+                            color={chipColor[t.type] || "default"}
+                            sx={{ height: 20, fontSize: "0.65rem" }}
                           />
                         </Box>
                         <Typography
@@ -198,15 +229,16 @@ export default function Transactions() {
                             mt: 0.5,
                             color:
                               t.type === TRANSACTION_TYPES.INCOME
-                                ? 'success.main'
+                                ? "success.main"
                                 : t.type === TRANSACTION_TYPES.EXPENSE
-                                  ? 'error.main'
-                                  : 'secondary.main',
+                                  ? "error.main"
+                                  : "secondary.main",
                           }}
                         >
-                          {t.type === TRANSACTION_TYPES.EXPENSE ? '−' : '+'}{' '}
+                          {t.type === TRANSACTION_TYPES.EXPENSE ? "−" : "+"}{" "}
                           {(() => {
-                            const { amount, currency } = transactionDisplayAmount(t, profileCcy);
+                            const { amount, currency } =
+                              transactionDisplayAmount(t, profileCcy);
                             return formatCurrency(amount, currency);
                           })()}
                         </Typography>
@@ -234,15 +266,22 @@ export default function Transactions() {
         </Card>
       )}
 
-      <Tooltip title={hasAccounts ? 'Add transaction' : 'Create an account first'}>
-        <span style={{ position: 'fixed', bottom: 'auto', right: 24, zIndex: 1050 }}>
+      <Tooltip
+        title={hasAccounts ? "Add transaction" : "Create an account first"}
+      >
+        <span
+          style={{ position: "fixed", bottom: "auto", right: 24, zIndex: 1050 }}
+        >
           <Fab
             color="primary"
             onClick={() => setFormOpen(true)}
             disabled={!hasAccounts}
             sx={{
-              position: 'fixed',
-              bottom: { xs: 'calc(60px + env(safe-area-inset-bottom, 0px) + 16px)', md: 24 },
+              position: "fixed",
+              bottom: {
+                xs: "calc(60px + env(safe-area-inset-bottom, 0px) + 16px)",
+                md: 24,
+              },
               right: 24,
             }}
           >
