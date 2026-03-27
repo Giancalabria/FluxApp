@@ -39,8 +39,22 @@ export function AuthProvider({ children }) {
   const updatePassword = (newPassword) =>
     supabase.auth.updateUser({ password: newPassword });
 
+  const getAccessToken = async () => {
+    const { data } = await supabase.auth.getSession();
+    return data.session?.access_token ?? null;
+  };
+
   const value = useMemo(
-    () => ({ user, loading, signIn, signUp, signOut, updateEmail, updatePassword }),
+    () => ({
+      user,
+      loading,
+      signIn,
+      signUp,
+      signOut,
+      updateEmail,
+      updatePassword,
+      getAccessToken,
+    }),
     [user, loading]
   );
 

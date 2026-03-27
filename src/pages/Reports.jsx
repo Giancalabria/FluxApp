@@ -31,7 +31,11 @@ import TrendingDownIcon from '@mui/icons-material/TrendingDownRounded';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrowsRounded';
 import { useTransactions } from '../hooks/useTransactions';
 import { useAccounts } from '../hooks/useAccounts';
+import { useFinancialProfile } from '../context/FinancialProfileContext';
+import { useExchangeRates } from '../hooks/useExchangeRates';
+import { exchangeRateService } from '../services/exchangeRateService';
 import { formatCurrency, formatDate } from '../lib/formatters';
+import { transactionDisplayAmount } from '../lib/transactionDisplay';
 import { getPresetRange } from '../lib/dateRangePresets';
 import DateRangeFilter from '../components/common/DateRangeFilter';
 import { TRANSACTION_TYPES, EXPENSE_CLASS_OPTIONS } from '../constants';
@@ -99,16 +103,22 @@ function getClassification(t) {
 }
 
 export default function Reports() {
+  const { activeProfile } = useFinancialProfile();
+  const profileId = activeProfile?.id;
+  const profileCcy = activeProfile?.preferred_currency_code ?? 'ARS';
+  const { usdArsRate } = useExchangeRates();
+
   const defaultRange = useMemo(() => getPresetRange('all_time') ?? { dateFrom: null, dateTo: null }, []);
   const [dateRange, setDateRange] = useState(defaultRange);
   const [selectedAccountIds, setSelectedAccountIds] = useState([]);
   const filters = {
+    financialProfileId: profileId,
     ...(dateRange?.dateFrom && { dateFrom: dateRange.dateFrom }),
     ...(dateRange?.dateTo && { dateTo: dateRange.dateTo }),
     ...(selectedAccountIds.length > 0 && { accountIds: selectedAccountIds }),
   };
   const { transactions, loading } = useTransactions(filters);
-  const { accounts } = useAccounts();
+  const { accounts } = useAccounts(profileId);
 
   const [expandedClass, setExpandedClass] = useState(null);
 
@@ -147,9 +157,14 @@ export default function Reports() {
     return map;
   }, [reportAccounts, netChangeByAccountId]);
 
-  const initialBalanceTotal = useMemo(() => {
-    return reportAccounts.reduce((sum, a) => sum + (initialBalanceByAccountId[a.id] ?? 0), 0);
-  }, [reportAccounts, initialBalanceByAccountId]);
+  const initialBalanceTotalProfile = useMemo(() => {
+    return reportAccounts.reduce((sum, a) => {
+      const raw = initialBalanceByAccountId[a.id] ?? 0;
+      const ccy = a.currency_code ?? a.currency;
+      const conv = exchangeRateService.convertToProfileCurrency(raw, ccy, profileCcy, usdArsRate);
+      return sum + (conv ?? raw);
+    }, 0);
+  }, [reportAccounts, initialBalanceByAccountId, profileCcy, usdArsRate]);
 
   const byAccount = useMemo(() => {
     const map = {};
@@ -172,8 +187,17 @@ export default function Reports() {
     const byClassification = { fixed: 0, variable: 0, essential: 0, uncategorized: 0 };
     const byClassificationList = { fixed: [], variable: [], essential: [], uncategorized: [] };
 
+    const txProfileAmt = (t) => {
+      if (t.amount_profile != null && Number.isFinite(Number(t.amount_profile))) return Number(t.amount_profile);
+      const c = t.currency_code ?? t.account?.currency_code ?? t.account?.currency ?? 'ARS';
+      return (
+        exchangeRateService.convertToProfileCurrency(Number(t.amount || 0), c, profileCcy, usdArsRate) ??
+        Number(t.amount || 0)
+      );
+    };
+
     transactions.forEach((t) => {
-      const amount = Number(t.amount);
+      const amount = txProfileAmt(t);
       if (t.type === TRANSACTION_TYPES.INCOME) income += amount;
       if (t.type === TRANSACTION_TYPES.EXPENSE) {
         expense += amount;
@@ -184,13 +208,19 @@ export default function Reports() {
       }
     });
 
-    const net = initialBalanceTotal + income - expense;
+    const net = initialBalanceTotalProfile + income - expense;
 
     return {
-      totals: { income, expense, net, initialBalance: initialBalanceTotal, byClassification },
+      totals: {
+        income,
+        expense,
+        net,
+        initialBalance: initialBalanceTotalProfile,
+        byClassification,
+      },
       expensesByClassification: byClassificationList,
     };
-  }, [transactions, initialBalanceTotal]);
+  }, [transactions, initialBalanceTotalProfile, profileCcy, usdArsRate]);
 
   const maxClassVal = Math.max(...Object.values(totals.byClassification), 1);
 
@@ -241,32 +271,32 @@ export default function Reports() {
           <Grid container spacing={1.5} sx={{ mb: 3 }}>
             <Grid size={{ xs: 6, sm: 3 }}>
               <SummaryCard
-                label="Initial Balance"
-                value={formatCurrency(totals.initialBalance)}
+                label={`Initial Balance (${profileCcy})`}
+                value={formatCurrency(totals.initialBalance, profileCcy)}
                 subtitle="Start of period"
                 icon={<AccountBalanceWalletIcon fontSize="small" />}
               />
             </Grid>
             <Grid size={{ xs: 6, sm: 3 }}>
               <SummaryCard
-                label="Income"
-                value={formatCurrency(totals.income)}
+                label={`Income (${profileCcy})`}
+                value={formatCurrency(totals.income, profileCcy)}
                 color="success"
                 icon={<TrendingUpIcon fontSize="small" />}
               />
             </Grid>
             <Grid size={{ xs: 6, sm: 3 }}>
               <SummaryCard
-                label="Expenses"
-                value={formatCurrency(totals.expense)}
+                label={`Expenses (${profileCcy})`}
+                value={formatCurrency(totals.expense, profileCcy)}
                 color="error"
                 icon={<TrendingDownIcon fontSize="small" />}
               />
             </Grid>
             <Grid size={{ xs: 6, sm: 3 }}>
               <SummaryCard
-                label="Net"
-                value={formatCurrency(totals.net)}
+                label={`Net (${profileCcy})`}
+                value={formatCurrency(totals.net, profileCcy)}
                 subtitle="Initial + Income − Expenses"
                 color={totals.net >= 0 ? 'success' : 'error'}
                 icon={<CompareArrowsIcon fontSize="small" />}
@@ -322,15 +352,15 @@ export default function Reports() {
                     })}
                     {reportAccounts.length > 0 && (
                     <TableRow sx={{ fontWeight: 700, bgcolor: 'action.hover' }}>
-                      <TableCell>Total</TableCell>
+                      <TableCell>Total ({profileCcy})</TableCell>
                       <TableCell align="right" sx={{ color: 'success.main' }}>
-                        {formatCurrency(totals.income)}
+                        {formatCurrency(totals.income, profileCcy)}
                       </TableCell>
                       <TableCell align="right" sx={{ color: 'error.main' }}>
-                        −{formatCurrency(totals.expense)}
+                        −{formatCurrency(totals.expense, profileCcy)}
                       </TableCell>
                       <TableCell align="right" sx={{ color: totals.net - totals.initialBalance >= 0 ? 'success.main' : 'error.main' }}>
-                        {formatCurrency(totals.income - totals.expense)}
+                        {formatCurrency(totals.income - totals.expense, profileCcy)}
                       </TableCell>
                     </TableRow>
                     )}
@@ -383,7 +413,7 @@ export default function Reports() {
                             <Chip label={opt.label} size="small" color={classColors[opt.value] || 'default'} />
                           </Box>
                           <Typography variant="body2" fontWeight={600} noWrap>
-                            {formatCurrency(amount)} ({pct.toFixed(0)}%)
+                            {formatCurrency(amount, profileCcy)} ({pct.toFixed(0)}%)
                           </Typography>
                         </Box>
                         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
@@ -406,7 +436,10 @@ export default function Reports() {
                                   secondaryTypographyProps={{ variant: 'caption' }}
                                 />
                                 <Typography variant="body2" fontWeight={600} color="error.main">
-                                  −{formatCurrency(t.amount, t.account?.currency_code ?? t.account?.currency)}
+                                  −{formatCurrency(
+                                    transactionDisplayAmount(t, profileCcy).amount,
+                                    transactionDisplayAmount(t, profileCcy).currency
+                                  )}
                                 </Typography>
                               </ListItem>
                             ))}
@@ -434,7 +467,7 @@ export default function Reports() {
                             <Chip label="Uncategorized" size="small" />
                           </Box>
                           <Typography variant="body2" fontWeight={600} noWrap>
-                            {formatCurrency(totals.byClassification.uncategorized)} (
+                            {formatCurrency(totals.byClassification.uncategorized, profileCcy)} (
                             {((totals.byClassification.uncategorized / totals.expense) * 100).toFixed(0)}%)
                           </Typography>
                         </Box>
@@ -454,7 +487,10 @@ export default function Reports() {
                                   secondaryTypographyProps={{ variant: 'caption' }}
                                 />
                                 <Typography variant="body2" fontWeight={600} color="error.main">
-                                  −{formatCurrency(t.amount, t.account?.currency_code ?? t.account?.currency)}
+                                  −{formatCurrency(
+                                    transactionDisplayAmount(t, profileCcy).amount,
+                                    transactionDisplayAmount(t, profileCcy).currency
+                                  )}
                                 </Typography>
                               </ListItem>
                             ))}

@@ -1,11 +1,10 @@
 import { supabase } from '../lib/supabase';
 
 export const accountService = {
-  async getAll() {
-    const { data, error } = await supabase
-      .from('accounts')
-      .select('*')
-      .order('created_at', { ascending: false });
+  async getAll(financialProfileId) {
+    let q = supabase.from('accounts').select('*').order('created_at', { ascending: false });
+    if (financialProfileId) q = q.eq('financial_profile_id', financialProfileId);
+    const { data, error } = await q;
     return { data, error };
   },
 

@@ -29,6 +29,26 @@ export const EXPENSE_CLASS_OPTIONS = [
   { value: 'essential', label: 'Essential', description: 'Mandatory but variable (groceries, transport)' },
 ];
 
+export const PAY_FREQUENCY_OPTIONS = [
+  { value: 'monthly', label: 'Monthly' },
+  { value: 'weekly', label: 'Weekly' },
+  { value: 'biweekly', label: 'Every two weeks' },
+];
+
+export const FINANCIAL_GOAL_OPTIONS = [
+  { value: 'spend_less', label: 'Spend less' },
+  { value: 'save_for_goal', label: 'Save for something' },
+];
+
+/** Parser `bank` field; generic works for structured CSV/XLSX. */
+export const BANK_IMPORT_OPTIONS = [
+  { value: 'generic', label: 'Generic / unknown bank' },
+  { value: 'bbva', label: 'BBVA' },
+  { value: 'galicia', label: 'Galicia' },
+  { value: 'santander', label: 'Santander' },
+  { value: 'nacion', label: 'Banco Nación' },
+];
+
 export const DEFAULT_CATEGORIES = [
   { name: 'Rent', classification: 'fixed' },
   { name: 'Insurance', classification: 'fixed' },

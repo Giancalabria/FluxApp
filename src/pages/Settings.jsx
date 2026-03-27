@@ -11,17 +11,30 @@ import {
   InputAdornment,
   IconButton,
   CircularProgress,
-  Switch,
-  FormControlLabel,
+  MenuItem,
+  List,
+  ListItem,
+  ListItemText,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/VisibilityRounded';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOffRounded';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../hooks/useProfile';
+import { useFinancialProfile } from '../context/FinancialProfileContext';
+import { financialProfileService } from '../services/financialProfileService';
+import { categoryService } from '../services/categoryService';
+import { useCurrencies } from '../hooks/useCurrencies';
+import { PAY_FREQUENCY_OPTIONS, FINANCIAL_GOAL_OPTIONS } from '../constants';
 
 export default function Settings() {
   const { user, updateEmail, updatePassword } = useAuth();
   const { profile, loading: profileLoading, updateUsername } = useProfile(user?.id);
+  const { profiles, refetchProfiles, setActiveProfileId } = useFinancialProfile();
+  const { currencies } = useCurrencies();
 
   const [username, setUsername] = useState('');
   const [usernameSaving, setUsernameSaving] = useState(false);
@@ -39,23 +52,14 @@ export default function Settings() {
   const [passwordError, setPasswordError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState(false);
 
-  const SHOW_TOTAL_USD_KEY = 'finanzas_show_total_usd';
-  const [showTotalUsd, setShowTotalUsd] = useState(() => {
-    try {
-      const v = localStorage.getItem(SHOW_TOTAL_USD_KEY);
-      return v !== 'false';
-    } catch {
-      return true;
-    }
-  });
-
-  const handleShowTotalUsdChange = (e) => {
-    const checked = e.target.checked;
-    setShowTotalUsd(checked);
-    try {
-      localStorage.setItem(SHOW_TOTAL_USD_KEY, String(checked));
-    } catch {}
-  };
+  const [addOpen, setAddOpen] = useState(false);
+  const [fpName, setFpName] = useState('');
+  const [fpCurrency, setFpCurrency] = useState('ARS');
+  const [fpSalary, setFpSalary] = useState('');
+  const [fpPay, setFpPay] = useState('monthly');
+  const [fpGoal, setFpGoal] = useState('spend_less');
+  const [fpSaving, setFpSaving] = useState(false);
+  const [fpError, setFpError] = useState('');
 
   useEffect(() => {
     if (profile?.username != null && username === '') setUsername(profile.username);
@@ -107,6 +111,56 @@ export default function Settings() {
       setPasswordSuccess(true);
       setPassword('');
     }
+  };
+
+  const handleAddWorkspace = async (e) => {
+    e.preventDefault();
+    setFpError('');
+    const n = fpName.trim();
+    const sal = parseFloat(fpSalary);
+    if (!user?.id) {
+      setFpError('Not signed in.');
+      return;
+    }
+    if (!n) {
+      setFpError('Enter a workspace name.');
+      return;
+    }
+    if (!Number.isFinite(sal) || sal < 0) {
+      setFpError('Enter a valid salary.');
+      return;
+    }
+    setFpSaving(true);
+    const now = new Date().toISOString();
+    const { data: created, error: pErr } = await financialProfileService.create({
+      user_id: user.id,
+      name: n,
+      preferred_currency_code: fpCurrency,
+      salary_amount: sal,
+      pay_frequency: fpPay,
+      financial_goal: fpGoal,
+      onboarding_completed_at: now,
+    });
+    if (pErr || !created) {
+      setFpSaving(false);
+      setFpError(pErr?.message || 'Could not create workspace.');
+      return;
+    }
+    const { error: cErr } = await categoryService.seedDefaultsForProfile(user.id, created.id);
+    if (cErr) {
+      setFpSaving(false);
+      setFpError(cErr.message || 'Workspace created but categories failed.');
+      return;
+    }
+    await refetchProfiles();
+    setActiveProfileId(created.id);
+    setFpSaving(false);
+    setAddOpen(false);
+    setFpName('');
+    setFpSalary('');
+    setFpCurrency('ARS');
+    setFpPay('monthly');
+    setFpGoal('spend_less');
   };
 
   return (
@@ -194,23 +248,88 @@ export default function Settings() {
       <Card sx={{ mb: 2 }}>
         <CardContent>
           <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-            Dashboard
+            Financial workspaces
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-            Show total balance in USD on the Dashboard (converted from all currencies using current rate).
+            Each workspace has its own currency (fixed forever), accounts, and categories. Switch workspaces from the top
+            bar on mobile or use the list below to see names and currencies.
           </Typography>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={showTotalUsd}
-                onChange={handleShowTotalUsdChange}
-                color="primary"
-              />
-            }
-            label="Show total balance (USD)"
-          />
+          <Button variant="outlined" size="small" onClick={() => setAddOpen(true)} sx={{ mb: 1 }}>
+            New workspace
+          </Button>
+          <List dense disablePadding>
+            {profiles.map((p) => (
+              <ListItem key={p.id} disablePadding sx={{ py: 0.5 }}>
+                <ListItemText
+                  primary={p.name}
+                  secondary={`${p.preferred_currency_code} · salary ${p.salary_amount ?? '—'} (${p.pay_frequency ?? '—'})`}
+                />
+              </ListItem>
+            ))}
+          </List>
         </CardContent>
       </Card>
+
+      <Dialog open={addOpen} onClose={() => !fpSaving && setAddOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>New workspace</DialogTitle>
+        <form onSubmit={handleAddWorkspace}>
+          <DialogContent>
+            <Stack spacing={2} sx={{ pt: 1 }}>
+              {fpError && (
+                <Alert severity="error" onClose={() => setFpError('')}>
+                  {fpError}
+                </Alert>
+              )}
+              <TextField label="Name" value={fpName} onChange={(e) => setFpName(e.target.value)} required fullWidth />
+              <TextField
+                label="Currency (cannot change later)"
+                value={fpCurrency}
+                onChange={(e) => setFpCurrency(e.target.value)}
+                select
+                required
+                fullWidth
+              >
+                {currencies.map((c) => (
+                  <MenuItem key={c.code} value={c.code}>
+                    {c.symbol} — {c.name}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField
+                label="Salary"
+                type="number"
+                value={fpSalary}
+                onChange={(e) => setFpSalary(e.target.value)}
+                required
+                fullWidth
+                slotProps={{ htmlInput: { step: '0.01', min: 0 } }}
+              />
+              <TextField label="Pay frequency" value={fpPay} onChange={(e) => setFpPay(e.target.value)} select fullWidth>
+                {PAY_FREQUENCY_OPTIONS.map((o) => (
+                  <MenuItem key={o.value} value={o.value}>
+                    {o.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+              <TextField label="Objective" value={fpGoal} onChange={(e) => setFpGoal(e.target.value)} select fullWidth>
+                {FINANCIAL_GOAL_OPTIONS.map((o) => (
+                  <MenuItem key={o.value} value={o.value}>
+                    {o.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Stack>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button type="button" onClick={() => setAddOpen(false)} disabled={fpSaving}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="contained" disabled={fpSaving}>
+              {fpSaving ? <CircularProgress size={22} /> : 'Create'}
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
 
       <Card>
         <CardContent>

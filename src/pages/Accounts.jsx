@@ -17,23 +17,34 @@ import EditIcon from '@mui/icons-material/EditRounded';
 import DeleteIcon from '@mui/icons-material/DeleteRounded';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWalletRounded';
 import { useAccounts } from '../hooks/useAccounts';
+import { useAuth } from '../context/AuthContext';
+import { useFinancialProfile } from '../context/FinancialProfileContext';
 import { formatCurrency } from '../lib/formatters';
 import AccountFormDialog from '../components/accounts/AccountFormDialog';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import EmptyState from '../components/common/EmptyState';
 
 export default function Accounts() {
-  const { accounts, loading, createAccount, updateAccount, deleteAccount } = useAccounts();
+  const { user } = useAuth();
+  const { activeProfile } = useFinancialProfile();
+  const profileId = activeProfile?.id;
+  const preferredCurrency = activeProfile?.preferred_currency_code;
+  const { accounts, loading, createAccount, updateAccount, deleteAccount } = useAccounts(profileId);
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const handleSave = async (values) => {
+    const payload = {
+      ...values,
+      financial_profile_id: profileId,
+      ...(user?.id ? { user_id: user.id } : {}),
+    };
     if (editing) {
-      await updateAccount(editing.id, values);
+      await updateAccount(editing.id, payload);
     } else {
-      await createAccount(values);
+      await createAccount(payload);
     }
     setFormOpen(false);
     setEditing(null);
@@ -139,6 +150,7 @@ export default function Accounts() {
         onClose={() => { setFormOpen(false); setEditing(null); }}
         onSave={handleSave}
         initial={editing}
+        preferredCurrencyCode={preferredCurrency}
       />
 
       <ConfirmDialog

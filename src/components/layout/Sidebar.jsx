@@ -7,6 +7,9 @@ import {
   ListItemText,
   Typography,
   Divider,
+  FormControl,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/DashboardRounded';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWalletRounded';
@@ -15,12 +18,15 @@ import BarChartIcon from '@mui/icons-material/BarChartRounded';
 import GroupIcon from '@mui/icons-material/GroupsRounded';
 import SettingsIcon from '@mui/icons-material/SettingsRounded';
 import LogoutIcon from '@mui/icons-material/LogoutRounded';
+import UploadFileIcon from '@mui/icons-material/UploadFileRounded';
 import { useAuth } from '../../context/AuthContext';
+import { useFinancialProfile } from '../../context/FinancialProfileContext';
 
 const NAV_ITEMS = [
   { path: '/dashboard', label: 'Dashboard', icon: <DashboardIcon /> },
   { path: '/accounts', label: 'Accounts', icon: <AccountBalanceWalletIcon /> },
   { path: '/transactions', label: 'Transactions', icon: <SwapHorizIcon /> },
+  { path: '/import', label: 'Import', icon: <UploadFileIcon /> },
   { path: '/activities', label: 'Split', icon: <GroupIcon /> },
   { path: '/reports', label: 'Reports', icon: <BarChartIcon /> },
   { path: '/settings', label: 'Settings', icon: <SettingsIcon /> },
@@ -30,6 +36,7 @@ export default function Sidebar({ onClose }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { signOut } = useAuth();
+  const { profiles, activeProfileId, setActiveProfileId } = useFinancialProfile();
 
   const handleNav = (path) => {
     navigate(path);
@@ -45,13 +52,29 @@ export default function Sidebar({ onClose }) {
         <Typography variant="caption" color="text.secondary">
           Personal Finance Tracker
         </Typography>
+        {profiles.length > 0 && (
+          <FormControl size="small" fullWidth sx={{ mt: 2 }}>
+            <Select
+              value={activeProfileId || ''}
+              onChange={(e) => setActiveProfileId(e.target.value)}
+              displayEmpty
+              aria-label="Workspace"
+            >
+              {profiles.map((p) => (
+                <MenuItem key={p.id} value={p.id}>
+                  {p.name} ({p.preferred_currency_code})
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
       </Box>
 
       <Divider />
 
       <List sx={{ flexGrow: 1, px: 1, pt: 1 }}>
         {NAV_ITEMS.map(({ path, label, icon }) => {
-          const active = pathname === path;
+          const active = pathname === path || (path !== '/dashboard' && pathname.startsWith(`${path}/`));
           return (
             <ListItemButton
               key={path}

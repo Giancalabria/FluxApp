@@ -35,6 +35,24 @@ export function convertToUsd(amount, currency, usdArsRate) {
   return null;
 }
 
+/** Inverse of convertToUsd for ARS / USD-pegged codes only (same support as convertToUsd). */
+export function convertFromUsd(amountUsd, currency, usdArsRate) {
+  if (!Number.isFinite(amountUsd)) return null;
+  if (USD_PEGGED.has(currency)) return amountUsd;
+  if (currency === 'ARS') {
+    if (usdArsRate == null || !Number.isFinite(usdArsRate) || usdArsRate <= 0) return null;
+    return amountUsd * usdArsRate;
+  }
+  return null;
+}
+
+export function convertToProfileCurrency(amount, fromCurrency, profileCurrency, usdArsRate) {
+  if (fromCurrency === profileCurrency) return amount;
+  const usd = convertToUsd(amount, fromCurrency, usdArsRate);
+  if (usd == null) return null;
+  return convertFromUsd(usd, profileCurrency, usdArsRate);
+}
+
 export async function getUsdArsRate() {
   return fetchUsdArsRate();
 }
@@ -42,5 +60,7 @@ export async function getUsdArsRate() {
 export const exchangeRateService = {
   getUsdArsRate,
   convertToUsd,
+  convertFromUsd,
+  convertToProfileCurrency,
   USD_PEGGED,
 };

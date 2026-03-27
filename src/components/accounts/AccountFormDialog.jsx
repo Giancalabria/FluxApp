@@ -20,22 +20,24 @@ import { useCurrencies } from '../../hooks/useCurrencies';
 
 const empty = { name: '', currency_code: 'ARS', balance: '' };
 
-export default function AccountFormDialog({ open, onClose, onSave, initial }) {
+export default function AccountFormDialog({ open, onClose, onSave, initial, preferredCurrencyCode }) {
   const [form, setForm] = useState(empty);
   const { currencies } = useCurrencies();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const lockedCurrency = preferredCurrencyCode || null;
 
   useEffect(() => {
     if (open) {
-      const curr = initial?.currency_code ?? initial?.currency ?? 'ARS';
+      const curr =
+        lockedCurrency ?? initial?.currency_code ?? initial?.currency ?? 'ARS';
       setForm(
         initial
           ? { name: initial.name, currency_code: curr, balance: String(initial.balance) }
-          : empty
+          : { ...empty, currency_code: curr }
       );
     }
-  }, [open, initial]);
+  }, [open, initial, lockedCurrency]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -108,6 +110,8 @@ export default function AccountFormDialog({ open, onClose, onSave, initial }) {
             select
             required
             fullWidth
+            disabled={!!lockedCurrency}
+            helperText={lockedCurrency ? `This workspace always uses ${lockedCurrency}.` : undefined}
           >
             {currencies.map((c) => (
               <MenuItem key={c.code} value={c.code}>

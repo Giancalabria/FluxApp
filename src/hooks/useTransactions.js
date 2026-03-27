@@ -5,10 +5,17 @@ export function useTransactions(filters = {}) {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { financialProfileId, ...rest } = filters;
 
   const fetch = useCallback(async () => {
+    if (!financialProfileId) {
+      setTransactions([]);
+      setLoading(false);
+      setError(null);
+      return;
+    }
     setLoading(true);
-    const { data, error: err } = await transactionService.getAll(filters);
+    const { data, error: err } = await transactionService.getAll({ ...rest, financialProfileId });
     if (err) {
       setError(err.message);
       setTransactions([]);
@@ -17,7 +24,7 @@ export function useTransactions(filters = {}) {
       setTransactions(data ?? []);
     }
     setLoading(false);
-  }, [JSON.stringify(filters)]);
+  }, [financialProfileId, JSON.stringify(rest)]);
 
   useEffect(() => {
     fetch();
@@ -35,7 +42,22 @@ export function useTransactions(filters = {}) {
     return { error: err };
   };
 
+  const createTransactions = async (rows) => {
+    const { data, error: err } = await transactionService.createMany(rows);
+    if (!err) await fetch();
+    return { data, error: err };
+  };
+
   const clearError = useCallback(() => setError(null), []);
 
-  return { transactions, loading, error, refetch: fetch, createTransaction, deleteTransaction, clearError };
+  return {
+    transactions,
+    loading,
+    error,
+    refetch: fetch,
+    createTransaction,
+    createTransactions,
+    deleteTransaction,
+    clearError,
+  };
 }

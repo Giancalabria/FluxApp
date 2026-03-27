@@ -1,14 +1,20 @@
 import { useCallback, useEffect, useState } from 'react';
 import { accountService } from '../services/accountService';
 
-export function useAccounts() {
+export function useAccounts(financialProfileId) {
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const fetch = useCallback(async () => {
+    if (!financialProfileId) {
+      setAccounts([]);
+      setLoading(false);
+      setError(null);
+      return;
+    }
     setLoading(true);
-    const { data, error: err } = await accountService.getAll();
+    const { data, error: err } = await accountService.getAll(financialProfileId);
     if (err) {
       setError(err.message);
     } else {
@@ -16,7 +22,7 @@ export function useAccounts() {
       setError(null);
     }
     setLoading(false);
-  }, []);
+  }, [financialProfileId]);
 
   useEffect(() => {
     fetch();

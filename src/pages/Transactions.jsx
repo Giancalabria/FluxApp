@@ -28,10 +28,14 @@ import ReceiptLongIcon from '@mui/icons-material/ReceiptLongRounded';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWalletRounded';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useFinancialProfile } from '../context/FinancialProfileContext';
 import { useTransactions } from '../hooks/useTransactions';
 import { useAccounts } from '../hooks/useAccounts';
 import { useCategories } from '../hooks/useCategories';
+import { useExchangeRates } from '../hooks/useExchangeRates';
+import { exchangeRateService } from '../services/exchangeRateService';
 import { formatCurrency, formatDate } from '../lib/formatters';
+import { transactionDisplayAmount } from '../lib/transactionDisplay';
 import { getPresetRange } from '../lib/dateRangePresets';
 import { TRANSACTION_TYPES, TRANSACTION_TYPE_OPTIONS } from '../constants';
 import TransactionFormDialog from '../components/transactions/TransactionFormDialog';
@@ -50,16 +54,21 @@ const chipColor = { income: 'success', expense: 'error', transfer: 'secondary' }
 export default function Transactions() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { activeProfile } = useFinancialProfile();
+  const profileId = activeProfile?.id;
+  const profileCcy = activeProfile?.preferred_currency_code ?? 'ARS';
+  const { usdArsRate } = useExchangeRates();
   const [typeFilter, setTypeFilter] = useState('');
   const [dateRange, setDateRange] = useState(() => getPresetRange('all_time') ?? { dateFrom: null, dateTo: null });
   const filters = {
+    financialProfileId: profileId,
     ...(typeFilter && { type: typeFilter }),
     ...(dateRange?.dateFrom && { dateFrom: dateRange.dateFrom }),
     ...(dateRange?.dateTo && { dateTo: dateRange.dateTo }),
   };
   const { transactions, loading, error: txError, clearError, createTransaction, deleteTransaction } = useTransactions(filters);
-  const { accounts, loading: accLoading } = useAccounts();
-  const { categories } = useCategories();
+  const { accounts, loading: accLoading } = useAccounts(profileId);
+  const { categories } = useCategories(profileId);
 
   const hasAccounts = accounts.length > 0;
 
@@ -68,6 +77,17 @@ export default function Transactions() {
 
   const handleSave = async (values) => {
     if (user?.id) values.user_id = user.id;
+    if (profileId) values.financial_profile_id = profileId;
+    const fromCcy = values.currency_code;
+    let amountProfile = exchangeRateService.convertToProfileCurrency(
+      values.amount,
+      fromCcy,
+      profileCcy,
+      usdArsRate
+    );
+    if (amountProfile == null) amountProfile = values.amount;
+    values.amount_profile = amountProfile;
+    values.currency_original = fromCcy;
     await createTransaction(values);
     setFormOpen(false);
   };
@@ -185,7 +205,10 @@ export default function Transactions() {
                           }}
                         >
                           {t.type === TRANSACTION_TYPES.EXPENSE ? '−' : '+'}{' '}
-                          {formatCurrency(t.amount, t.account?.currency_code ?? t.account?.currency)}
+                          {(() => {
+                            const { amount, currency } = transactionDisplayAmount(t, profileCcy);
+                            return formatCurrency(amount, currency);
+                          })()}
                         </Typography>
                       </Box>
                     }

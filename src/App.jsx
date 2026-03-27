@@ -1,6 +1,7 @@
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import theme from './theme';
 import { AuthProvider } from './context/AuthContext';
+import { FinancialProfileProvider } from './context/FinancialProfileContext';
 import AppRouter from './router';
 
 export default function App() {
@@ -8,7 +9,9 @@ export default function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <AuthProvider>
-        <AppRouter />
+        <FinancialProfileProvider>
+          <AppRouter />
+        </FinancialProfileProvider>
       </AuthProvider>
     </ThemeProvider>
   );

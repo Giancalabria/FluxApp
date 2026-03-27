@@ -26,53 +26,65 @@ export function useExchangeRates() {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const convertToUsd = useCallback(
-    (amount, currency) => exchangeRateService.convertToUsd(amount, currency, usdArsRate),
+  const convertToProfileCurrency = useCallback(
+    (amount, fromCurrency, profileCurrency) =>
+      exchangeRateService.convertToProfileCurrency(amount, fromCurrency, profileCurrency, usdArsRate),
     [usdArsRate]
   );
 
-  const totalBalanceUsd = useCallback(
-    (accounts) => {
-      if (!accounts?.length) return null;
+  const totalBalanceInProfileCurrency = useCallback(
+    (accounts, profileCurrencyCode) => {
+      if (!accounts?.length || !profileCurrencyCode) return 0;
       let total = 0;
-      let hasUnknown = false;
       for (const a of accounts) {
         const currency = a.currency_code ?? a.currency;
-        const usd = convertToUsd(Number(a.balance || 0), currency);
-        if (usd != null) total += usd;
-        else hasUnknown = true;
+        const bal = Number(a.balance || 0);
+        if (currency === profileCurrencyCode) {
+          total += bal;
+          continue;
+        }
+        const conv = exchangeRateService.convertToProfileCurrency(bal, currency, profileCurrencyCode, usdArsRate);
+        if (conv != null) total += conv;
+        else total += bal;
       }
-      return hasUnknown && total === 0 ? null : total;
+      return total;
     },
-    [convertToUsd]
+    [usdArsRate]
   );
 
-  const monthTotalsUsd = useCallback(
-    (transactions) => {
+  const monthTotalsInProfileCurrency = useCallback(
+    (transactions, profileCurrencyCode) => {
       const now = new Date();
       const monthStart = toISODate(new Date(now.getFullYear(), now.getMonth(), 1));
       let income = 0;
       let expense = 0;
       for (const t of transactions || []) {
         if (t.date < monthStart) continue;
-        let usd = null;
-        const storedUsd = t.amount_in_usd ?? t.amount_usd;
-        if (storedUsd != null && Number.isFinite(Number(storedUsd))) {
-          usd = Number(storedUsd);
+        let amt = null;
+        const stored = t.amount_profile;
+        if (stored != null && Number.isFinite(Number(stored))) {
+          amt = Number(stored);
         } else {
-          const currency = (t.account?.currency_code ?? t.account?.currency) || 'ARS';
-          usd = convertToUsd(Number(t.amount || 0), currency);
+          const currency = t.currency_code ?? t.account?.currency_code ?? t.account?.currency ?? 'ARS';
+          amt = exchangeRateService.convertToProfileCurrency(
+            Number(t.amount || 0),
+            currency,
+            profileCurrencyCode,
+            usdArsRate
+          );
         }
-        if (usd == null) continue;
-        if (t.type === 'income') income += usd;
-        if (t.type === 'expense') expense += usd;
+        if (amt == null) continue;
+        if (t.type === 'income') income += amt;
+        if (t.type === 'expense') expense += amt;
       }
       return { income, expense };
     },
-    [convertToUsd]
+    [usdArsRate]
   );
 
   return {
@@ -80,8 +92,8 @@ export function useExchangeRates() {
     updatedAt,
     loading,
     error,
-    convertToUsd,
-    totalBalanceUsd,
-    monthTotalsUsd,
+    convertToProfileCurrency,
+    totalBalanceInProfileCurrency,
+    monthTotalsInProfileCurrency,
   };
 }

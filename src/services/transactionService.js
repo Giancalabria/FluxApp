@@ -13,6 +13,7 @@ export const transactionService = {
       `)
       .order('date', { ascending: false });
 
+    if (filters.financialProfileId) query = query.eq('financial_profile_id', filters.financialProfileId);
     if (filters.accountId) query = query.eq('account_id', filters.accountId);
     if (filters.accountIds?.length) query = query.in('account_id', filters.accountIds);
     if (filters.type) query = query.eq('type', filters.type);
@@ -29,11 +30,13 @@ export const transactionService = {
   },
 
   async create(tx) {
-    const { data, error } = await supabase
-      .from('transactions')
-      .insert(tx)
-      .select()
-      .single();
+    const { data, error } = await supabase.from('transactions').insert(tx).select().single();
+    return { data, error };
+  },
+
+  async createMany(rows) {
+    if (!rows?.length) return { data: [], error: null };
+    const { data, error } = await supabase.from('transactions').insert(rows).select();
     return { data, error };
   },
 

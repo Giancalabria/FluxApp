@@ -23,8 +23,10 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoneyRounded';
 import { useAccounts } from '../hooks/useAccounts';
 import { useTransactions } from '../hooks/useTransactions';
 import { useExchangeRates } from '../hooks/useExchangeRates';
+import { useFinancialProfile } from '../context/FinancialProfileContext';
 import { formatCurrency, formatDate } from '../lib/formatters';
 import { TRANSACTION_TYPES } from '../constants';
+import { transactionDisplayAmount } from '../lib/transactionDisplay';
 
 function StatCard({ label, value, color, icon }) {
   return (
@@ -82,19 +84,16 @@ function txColor(type) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { accounts, loading: accLoading } = useAccounts();
-  const { transactions, loading: txLoading } = useTransactions();
-  const { totalBalanceUsd, monthTotalsUsd, usdArsRate, loading: rateLoading, error: rateError } = useExchangeRates();
+  const { activeProfile } = useFinancialProfile();
+  const profileId = activeProfile?.id;
+  const profileCcy = activeProfile?.preferred_currency_code ?? 'ARS';
+
+  const { accounts, loading: accLoading } = useAccounts(profileId);
+  const { transactions, loading: txLoading } = useTransactions({ financialProfileId: profileId });
+  const { totalBalanceInProfileCurrency, monthTotalsInProfileCurrency, loading: rateLoading, error: rateError } =
+    useExchangeRates();
 
   const loading = accLoading || txLoading;
-
-  const showTotalUsd = (() => {
-    try {
-      return typeof localStorage !== 'undefined' && localStorage.getItem('finanzas_show_total_usd') !== 'false';
-    } catch {
-      return true;
-    }
-  })();
 
   const balanceByCurrency = useMemo(() => {
     const map = {};
@@ -105,9 +104,15 @@ export default function Dashboard() {
     return map;
   }, [accounts]);
 
-  const totalUsd = useMemo(() => totalBalanceUsd(accounts), [accounts, totalBalanceUsd]);
+  const totalProfile = useMemo(
+    () => totalBalanceInProfileCurrency(accounts, profileCcy),
+    [accounts, profileCcy, totalBalanceInProfileCurrency]
+  );
 
-  const monthUsd = useMemo(() => monthTotalsUsd(transactions), [transactions, monthTotalsUsd]);
+  const monthProfile = useMemo(
+    () => monthTotalsInProfileCurrency(transactions, profileCcy),
+    [transactions, profileCcy, monthTotalsInProfileCurrency]
+  );
 
   const recentTx = transactions.slice(0, 6);
 
@@ -135,36 +140,24 @@ export default function Dashboard() {
       </Typography>
 
       <Grid container spacing={1.5} sx={{ mb: 3 }}>
-        {showTotalUsd && (
-          <Grid size={{ xs: 12, sm: 4 }}>
-            <Tooltip
-              title={
-                rateError
-                  ? rateError
-                  : usdArsRate != null
-                    ? `1 USD ≈ ${Number(usdArsRate).toLocaleString('es-AR')} ARS (dólar blue). USD, USDT, USDC = 1:1.`
-                    : 'Loading rate from DolarAPI (dólar blue)…'
-              }
-            >
-              <Box component="span" sx={{ display: 'block' }}>
-                <StatCard
-                  label={rateLoading ? 'Total (USD) …' : 'Total balance (USD)'}
-                  value={
-                    rateLoading
-                      ? '…'
-                      : totalUsd != null
-                        ? formatCurrency(totalUsd, 'USD')
-                        : rateError
-                          ? '—'
-                          : '—'
-                  }
-                  color="primary"
-                  icon={<AttachMoneyIcon />}
-                />
-              </Box>
-            </Tooltip>
-          </Grid>
-        )}
+        <Grid size={{ xs: 12, sm: 4 }}>
+          <Tooltip
+            title={
+              rateError
+                ? rateError
+                : `Balances in accounts are converted to ${profileCcy} using the blue dollar rate when needed (ARS ↔ USD family).`
+            }
+          >
+            <Box component="span" sx={{ display: 'block' }}>
+              <StatCard
+                label={rateLoading ? `Total (${profileCcy}) …` : `Total balance (${profileCcy})`}
+                value={rateLoading ? '…' : formatCurrency(totalProfile, profileCcy)}
+                color="primary"
+                icon={<AttachMoneyIcon />}
+              />
+            </Box>
+          </Tooltip>
+        </Grid>
 
         {Object.entries(balanceByCurrency).map(([currency, total]) => (
           <Grid size={{ xs: 12, sm: 4 }} key={currency}>
@@ -189,29 +182,21 @@ export default function Dashboard() {
         )}
 
         <Grid size={{ xs: 6, sm: 4 }}>
-          <Tooltip title="Converted to USD (ARS at dólar blue). Lets you compare across currencies and inflation.">
-            <Box component="span" sx={{ display: 'block' }}>
-              <StatCard
-                label="Income (month, USD)"
-                value={formatCurrency(monthUsd.income, 'USD')}
-                color="success"
-                icon={<TrendingUpIcon />}
-              />
-            </Box>
-          </Tooltip>
+          <StatCard
+            label={`Income (month, ${profileCcy})`}
+            value={formatCurrency(monthProfile.income, profileCcy)}
+            color="success"
+            icon={<TrendingUpIcon />}
+          />
         </Grid>
 
         <Grid size={{ xs: 6, sm: 4 }}>
-          <Tooltip title="Converted to USD (ARS at dólar blue). Lets you compare across currencies and inflation.">
-            <Box component="span" sx={{ display: 'block' }}>
-              <StatCard
-                label="Expenses (month, USD)"
-                value={formatCurrency(monthUsd.expense, 'USD')}
-                color="error"
-                icon={<TrendingDownIcon />}
-              />
-            </Box>
-          </Tooltip>
+          <StatCard
+            label={`Expenses (month, ${profileCcy})`}
+            value={formatCurrency(monthProfile.expense, profileCcy)}
+            color="error"
+            icon={<TrendingDownIcon />}
+          />
         </Grid>
       </Grid>
 
@@ -232,25 +217,28 @@ export default function Dashboard() {
             </Typography>
           ) : (
             <List disablePadding>
-              {recentTx.map((t) => (
-                <ListItem key={t.id} divider sx={{ px: { xs: 0.5, sm: 0 }, py: 1 }}>
-                  <ListItemIcon sx={{ minWidth: 36 }}>{txIcon(t.type)}</ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <Typography variant="body2" fontWeight={500} noWrap>
-                        {t.description || t.type}
+              {recentTx.map((t) => {
+                const { amount, currency } = transactionDisplayAmount(t, profileCcy);
+                return (
+                  <ListItem key={t.id} divider sx={{ px: { xs: 0.5, sm: 0 }, py: 1 }}>
+                    <ListItemIcon sx={{ minWidth: 36 }}>{txIcon(t.type)}</ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <Typography variant="body2" fontWeight={500} noWrap>
+                          {t.description || t.type}
+                        </Typography>
+                      }
+                      secondary={formatDate(t.date)}
+                    />
+                    <Box sx={{ textAlign: 'right', flexShrink: 0, ml: 1 }}>
+                      <Typography variant="body2" fontWeight={600} sx={{ color: txColor(t.type) }} noWrap>
+                        {t.type === TRANSACTION_TYPES.EXPENSE ? '− ' : '+ '}
+                        {formatCurrency(amount, currency)}
                       </Typography>
-                    }
-                    secondary={formatDate(t.date)}
-                  />
-                  <Box sx={{ textAlign: 'right', flexShrink: 0, ml: 1 }}>
-                    <Typography variant="body2" fontWeight={600} sx={{ color: txColor(t.type) }} noWrap>
-                      {t.type === TRANSACTION_TYPES.EXPENSE ? '− ' : '+ '}
-                      {formatCurrency(t.amount, t.account?.currency_code ?? t.account?.currency)}
-                    </Typography>
-                  </Box>
-                </ListItem>
-              ))}
+                    </Box>
+                  </ListItem>
+                );
+              })}
             </List>
           )}
         </CardContent>
