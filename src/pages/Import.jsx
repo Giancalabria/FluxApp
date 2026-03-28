@@ -21,12 +21,17 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { useFinancialProfile } from "../context/FinancialProfileContext";
 import { useAccounts } from "../hooks/useAccounts";
+import { useCategories } from "../hooks/useCategories";
 import { useTransactions } from "../hooks/useTransactions";
 import { useExchangeRates } from "../hooks/useExchangeRates";
 import { parseStatementFile } from "../services/parserApiService";
 import { bankImportService } from "../services/bankImportService";
 import { exchangeRateService } from "../services/exchangeRateService";
-import { BANK_IMPORT_OPTIONS, TRANSACTION_TYPES } from "../constants";
+import {
+  BANK_IMPORT_OPTIONS,
+  TRANSACTION_TYPES,
+  EXPENSE_CLASS_OPTIONS,
+} from "../constants";
 import { formatCurrency, formatDate } from "../lib/formatters";
 
 export default function Import() {
@@ -35,6 +40,7 @@ export default function Import() {
   const profileId = activeProfile?.id;
   const profileCcy = activeProfile?.preferred_currency_code ?? "ARS";
   const { accounts, loading: accLoading } = useAccounts(profileId);
+  const { categories, loading: catLoading } = useCategories(profileId);
   const { createTransactions } = useTransactions({
     financialProfileId: profileId,
   });
@@ -43,6 +49,8 @@ export default function Import() {
   const [bank, setBank] = useState("generic");
   const [file, setFile] = useState(null);
   const [accountId, setAccountId] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [classification, setClassification] = useState("");
   const [parsed, setParsed] = useState(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -131,8 +139,8 @@ export default function Import() {
         currency_original: accCcy,
         description: r.description || "Import",
         date: r.date,
-        category_id: null,
-        classification: null,
+        category_id: categoryId || null,
+        classification: classification || null,
         exchange_rate_snapshot: accCcy === "USD" ? 1 : null,
       };
     });
@@ -222,35 +230,84 @@ export default function Import() {
             <Typography variant="subtitle1" fontWeight={600} gutterBottom>
               Preview ({parsed.rows?.length ?? 0} rows)
             </Typography>
-            <Stack
-              direction={{ xs: "column", sm: "row" }}
-              spacing={2}
-              sx={{ mb: 2 }}
-              alignItems={{ sm: "center" }}
-            >
-              <TextField
-                select
-                label="Target account"
-                size="small"
-                value={accountId}
-                onChange={(e) => setAccountId(e.target.value)}
-                sx={{ minWidth: 220 }}
-                disabled={accLoading || !accounts.length}
+            <Stack spacing={2} sx={{ mb: 2 }}>
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={2}
+                flexWrap="wrap"
+                alignItems={{ sm: "flex-start" }}
               >
-                {accounts.map((a) => (
-                  <MenuItem key={a.id} value={a.id}>
-                    {a.name} ({a.currency_code ?? a.currency})
+                <TextField
+                  select
+                  label="Target account"
+                  size="small"
+                  value={accountId}
+                  onChange={(e) => setAccountId(e.target.value)}
+                  sx={{ minWidth: 220 }}
+                  disabled={accLoading || !accounts.length}
+                >
+                  {accounts.map((a) => (
+                    <MenuItem key={a.id} value={a.id}>
+                      {a.name} ({a.currency_code ?? a.currency})
+                    </MenuItem>
+                  ))}
+                </TextField>
+                <TextField
+                  select
+                  label="Category"
+                  size="small"
+                  value={categoryId}
+                  onChange={(e) => {
+                    const id = e.target.value;
+                    setCategoryId(id);
+                    const cat = categories.find((c) => c.id === id);
+                    if (cat?.classification) {
+                      setClassification(cat.classification);
+                    } else if (!id) {
+                      setClassification("");
+                    }
+                  }}
+                  sx={{ minWidth: 220 }}
+                  disabled={catLoading}
+                  helperText="Applied to every imported row (same as manual expense)"
+                >
+                  <MenuItem value="">
+                    <em>None</em>
                   </MenuItem>
-                ))}
-              </TextField>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={handleImportRows}
-                disabled={busy || !accounts.length}
-              >
-                Import as expenses
-              </Button>
+                  {categories.map((c) => (
+                    <MenuItem key={c.id} value={c.id}>
+                      {c.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+                <TextField
+                  select
+                  label="Classification"
+                  size="small"
+                  value={classification}
+                  onChange={(e) => setClassification(e.target.value)}
+                  sx={{ minWidth: 260 }}
+                  helperText="Fixed / variable / essential (optional)"
+                >
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  {EXPENSE_CLASS_OPTIONS.map((c) => (
+                    <MenuItem key={c.value} value={c.value}>
+                      {c.label} — {c.description}
+                    </MenuItem>
+                  ))}
+                </TextField>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={handleImportRows}
+                  disabled={busy || !accounts.length}
+                  sx={{ alignSelf: { sm: "center" } }}
+                >
+                  Import as expenses
+                </Button>
+              </Stack>
             </Stack>
 
             <TableContainer
