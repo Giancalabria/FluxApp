@@ -43,9 +43,9 @@ export const FINANCIAL_GOAL_OPTIONS = [
 /** Parser `bank` field; PDF parsers match your sample exports (Patagonia / Macro / Santander Río). */
 export const BANK_IMPORT_OPTIONS = [
   { value: 'generic', label: 'Generic / unknown bank' },
-  { value: 'patagonia', label: 'Banco Patagonia (Visa resumen / ComprobanteBP)' },
-  { value: 'macro', label: 'Banco Macro (Visa resumen)' },
-  { value: 'santander', label: 'Santander Río (Visa resumen)' },
+  { value: 'patagonia', label: 'Banco Patagonia' },
+  { value: 'macro', label: 'Banco Macro' },
+  { value: 'santander', label: 'Santander Río' },
   { value: 'bbva', label: 'BBVA' },
   { value: 'galicia', label: 'Galicia' },
   { value: 'nacion', label: 'Banco Nación' },

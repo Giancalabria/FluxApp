@@ -49,9 +49,9 @@ export default function Import() {
   const [bank, setBank] = useState("generic");
   const [file, setFile] = useState(null);
   const [accountId, setAccountId] = useState("");
-  const [categoryId, setCategoryId] = useState("");
-  const [classification, setClassification] = useState("");
   const [parsed, setParsed] = useState(null);
+  /** Per preview row: category_id and classification (aligned with parsed.rows). */
+  const [rowEdits, setRowEdits] = useState([]);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [importDone, setImportDone] = useState(false);
@@ -60,6 +60,7 @@ export default function Import() {
     setError("");
     setImportDone(false);
     setParsed(null);
+    setRowEdits([]);
     if (!file) {
       setError("Choose a file.");
       return;
@@ -78,6 +79,9 @@ export default function Import() {
         accessToken: token,
       });
       setParsed(json);
+      setRowEdits(
+        (json.rows || []).map(() => ({ category_id: "", classification: "" })),
+      );
       if (user?.id && profileId) {
         await bankImportService.create({
           user_id: user.id,
@@ -119,7 +123,7 @@ export default function Import() {
     const acc = accounts.find((a) => a.id === accountId);
     const accCcy = acc?.currency_code ?? acc?.currency ?? profileCcy;
 
-    const rows = parsed.rows.map((r) => {
+    const rows = parsed.rows.map((r, i) => {
       const amount = Number(r.amount);
       let amountProfile = exchangeRateService.convertToProfileCurrency(
         amount,
@@ -128,6 +132,7 @@ export default function Import() {
         usdArsRate,
       );
       if (amountProfile == null) amountProfile = amount;
+      const edit = rowEdits[i] || {};
       return {
         user_id: user.id,
         financial_profile_id: profileId,
@@ -139,8 +144,8 @@ export default function Import() {
         currency_original: accCcy,
         description: r.description || "Import",
         date: r.date,
-        category_id: categoryId || null,
-        classification: classification || null,
+        category_id: edit.category_id || null,
+        classification: edit.classification || null,
         exchange_rate_snapshot: accCcy === "USD" ? 1 : null,
       };
     });
@@ -152,6 +157,7 @@ export default function Import() {
     else {
       setImportDone(true);
       setParsed(null);
+      setRowEdits([]);
       setFile(null);
     }
   };
@@ -230,84 +236,36 @@ export default function Import() {
             <Typography variant="subtitle1" fontWeight={600} gutterBottom>
               Preview ({parsed.rows?.length ?? 0} rows)
             </Typography>
-            <Stack spacing={2} sx={{ mb: 2 }}>
-              <Stack
-                direction={{ xs: "column", sm: "row" }}
-                spacing={2}
-                flexWrap="wrap"
-                alignItems={{ sm: "flex-start" }}
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={2}
+              sx={{ mb: 2 }}
+              alignItems={{ sm: "center" }}
+              flexWrap="wrap"
+            >
+              <TextField
+                select
+                label="Target account"
+                size="small"
+                value={accountId}
+                onChange={(e) => setAccountId(e.target.value)}
+                sx={{ minWidth: 220 }}
+                disabled={accLoading || !accounts.length}
               >
-                <TextField
-                  select
-                  label="Target account"
-                  size="small"
-                  value={accountId}
-                  onChange={(e) => setAccountId(e.target.value)}
-                  sx={{ minWidth: 220 }}
-                  disabled={accLoading || !accounts.length}
-                >
-                  {accounts.map((a) => (
-                    <MenuItem key={a.id} value={a.id}>
-                      {a.name} ({a.currency_code ?? a.currency})
-                    </MenuItem>
-                  ))}
-                </TextField>
-                <TextField
-                  select
-                  label="Category"
-                  size="small"
-                  value={categoryId}
-                  onChange={(e) => {
-                    const id = e.target.value;
-                    setCategoryId(id);
-                    const cat = categories.find((c) => c.id === id);
-                    if (cat?.classification) {
-                      setClassification(cat.classification);
-                    } else if (!id) {
-                      setClassification("");
-                    }
-                  }}
-                  sx={{ minWidth: 220 }}
-                  disabled={catLoading}
-                  helperText="Applied to every imported row (same as manual expense)"
-                >
-                  <MenuItem value="">
-                    <em>None</em>
+                {accounts.map((a) => (
+                  <MenuItem key={a.id} value={a.id}>
+                    {a.name} ({a.currency_code ?? a.currency})
                   </MenuItem>
-                  {categories.map((c) => (
-                    <MenuItem key={c.id} value={c.id}>
-                      {c.name}
-                    </MenuItem>
-                  ))}
-                </TextField>
-                <TextField
-                  select
-                  label="Classification"
-                  size="small"
-                  value={classification}
-                  onChange={(e) => setClassification(e.target.value)}
-                  sx={{ minWidth: 260 }}
-                  helperText="Fixed / variable / essential (optional)"
-                >
-                  <MenuItem value="">
-                    <em>None</em>
-                  </MenuItem>
-                  {EXPENSE_CLASS_OPTIONS.map((c) => (
-                    <MenuItem key={c.value} value={c.value}>
-                      {c.label} — {c.description}
-                    </MenuItem>
-                  ))}
-                </TextField>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  onClick={handleImportRows}
-                  disabled={busy || !accounts.length}
-                  sx={{ alignSelf: { sm: "center" } }}
-                >
-                  Import as expenses
-                </Button>
-              </Stack>
+                ))}
+              </TextField>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={handleImportRows}
+                disabled={busy || !accounts.length}
+              >
+                Import as expenses
+              </Button>
             </Stack>
 
             <TableContainer
@@ -321,6 +279,8 @@ export default function Import() {
                     <TableCell>Date</TableCell>
                     <TableCell>Description</TableCell>
                     <TableCell align="right">Amount</TableCell>
+                    <TableCell sx={{ minWidth: 160 }}>Category</TableCell>
+                    <TableCell sx={{ minWidth: 140 }}>Classification</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -333,6 +293,74 @@ export default function Import() {
                           r.amount,
                           parsed.currency || profileCcy,
                         )}
+                      </TableCell>
+                      <TableCell sx={{ py: 1, verticalAlign: "middle" }}>
+                        <TextField
+                          select
+                          size="small"
+                          fullWidth
+                          value={rowEdits[i]?.category_id ?? ""}
+                          onChange={(e) => {
+                            const id = e.target.value;
+                            setRowEdits((prev) => {
+                              const next = [...prev];
+                              const cur = { ...(next[i] || {}) };
+                              cur.category_id = id;
+                              const cat = categories.find((c) => c.id === id);
+                              if (cat?.classification) {
+                                cur.classification = cat.classification;
+                              } else if (!id) {
+                                cur.classification = "";
+                              }
+                              next[i] = cur;
+                              return next;
+                            });
+                          }}
+                          disabled={catLoading}
+                          slotProps={{
+                            select: { displayEmpty: true },
+                          }}
+                        >
+                          <MenuItem value="">
+                            <em>None</em>
+                          </MenuItem>
+                          {categories.map((c) => (
+                            <MenuItem key={c.id} value={c.id}>
+                              {c.name}
+                            </MenuItem>
+                          ))}
+                        </TextField>
+                      </TableCell>
+                      <TableCell sx={{ py: 1, verticalAlign: "middle" }}>
+                        <TextField
+                          select
+                          size="small"
+                          fullWidth
+                          value={rowEdits[i]?.classification ?? ""}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            setRowEdits((prev) => {
+                              const next = [...prev];
+                              next[i] = {
+                                ...(next[i] || {}),
+                                classification: v,
+                              };
+                              return next;
+                            });
+                          }}
+                          slotProps={{
+                            select: { displayEmpty: true },
+                          }}
+                        >
+                          <MenuItem value="">
+                            <em>None</em>
+                          </MenuItem>
+                          {EXPENSE_CLASS_OPTIONS.map((c) => (
+                            <MenuItem key={c.value} value={c.value}>
+                              {c.label}
+                            </MenuItem>
+                          ))}
+                        </TextField>
                       </TableCell>
                     </TableRow>
                   ))}
