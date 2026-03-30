@@ -225,89 +225,91 @@ export default function Dashboard() {
       </Box>
 
       <Box sx={{ px: 2, pt: 2, pb: 1 }}>
-        {/* Currency tabs + Total Spent Card (attached) */}
-        <Box sx={{ mt: 1.5 }}>
+        {/* Currency tabs + Total Spent Card */}
+        <Card
+          sx={{
+            borderRadius: 3,
+            border: '1px solid',
+            borderColor: 'divider',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+            overflow: 'visible',
+          }}
+        >
+          {/* Tab row (inside the card, like Mercado Pago) */}
           {ucLoading ? (
-            <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 1.5 }}>
               <CircularProgress size={20} />
             </Box>
           ) : (
             <Stack
               direction="row"
-              spacing={1}
+              spacing={0}
               sx={{
-                overflowX: "auto",
-                px: 0.25,
-                py: 0.5,
-                bgcolor: "transparent",
-                mb: -1.5, // overlap card like attached tabs
-                ml: -0.5,
+                overflowX: 'auto',
+                px: 1,
+                pt: 1,
+                borderBottom: '1px solid',
+                borderColor: 'divider',
               }}
             >
-              {userCurrencies.map((uc, idx) => (
-                <Chip
-                  key={uc.currency_code}
-                  label={uc.currency_code}
-                  onClick={() => setActiveCurrencyIdx(idx)}
-                  sx={{
-                    fontWeight: 800,
-                    fontSize: "0.85rem",
-                    height: 34,
-                    borderRadius: 2,
-                    border: "1px solid",
-                    borderColor: "transparent",
-                    bgcolor:
-                      idx === activeCurrencyIdx
-                        ? "background.paper"
-                        : "transparent",
-                    color:
-                      idx === activeCurrencyIdx
-                        ? "text.primary"
-                        : "text.secondary",
-                    boxShadow:
-                      idx === activeCurrencyIdx
-                        ? "0 10px 24px rgba(0,0,0,0.12)"
-                        : "none",
-                    zIndex: idx === activeCurrencyIdx ? 2 : 1,
-                    "& .MuiChip-label": { px: 1.5 },
-                    "&:hover": {
-                      bgcolor:
-                        idx === activeCurrencyIdx
-                          ? "background.paper"
-                          : "action.hover",
-                    },
-                  }}
-                />
-              ))}
-              <Chip
-                icon={<AddRoundedIcon fontSize="small" />}
-                label="Moneda"
-                variant="outlined"
+              {userCurrencies.map((uc, idx) => {
+                const isActive = idx === activeCurrencyIdx;
+                return (
+                  <Button
+                    key={uc.currency_code}
+                    disableRipple
+                    onClick={() => setActiveCurrencyIdx(idx)}
+                    sx={{
+                      minWidth: 'auto',
+                      px: 1.5,
+                      py: 1,
+                      borderRadius: 0,
+                      fontWeight: isActive ? 700 : 500,
+                      fontSize: '0.88rem',
+                      color: isActive ? 'text.primary' : 'text.secondary',
+                      textTransform: 'none',
+                      borderBottom: '2px solid',
+                      borderColor: isActive ? 'primary.main' : 'transparent',
+                      bgcolor: 'transparent',
+                      '&:hover': { bgcolor: 'action.hover', borderColor: isActive ? 'primary.main' : 'action.hover' },
+                    }}
+                  >
+                    {uc.currency_code}
+                  </Button>
+                );
+              })}
+              <Button
+                disableRipple
                 onClick={() => setAddCurrencyOpen(true)}
+                startIcon={<AddRoundedIcon sx={{ fontSize: 18 }} />}
                 sx={{
-                  fontWeight: 700,
-                  height: 34,
-                  borderRadius: 2,
-                  color: "text.secondary",
-                  borderColor: "divider",
-                  bgcolor: "transparent",
-                  "& .MuiChip-label": { px: 1.1 },
-                  "&:hover": { bgcolor: "action.hover" },
+                  minWidth: 'auto',
+                  px: 1.5,
+                  py: 1,
+                  borderRadius: 0,
+                  fontWeight: 500,
+                  fontSize: '0.82rem',
+                  color: 'text.disabled',
+                  textTransform: 'none',
+                  borderBottom: '2px solid transparent',
+                  bgcolor: 'transparent',
+                  '&:hover': { bgcolor: 'action.hover', color: 'text.secondary' },
                 }}
-              />
+              >
+                Moneda
+              </Button>
             </Stack>
           )}
 
-          <Card
+          {/* Green content area */}
+          <Box
             sx={{
-              bgcolor: "primary.main",
-              color: "primary.contrastText",
-              borderRadius: 3,
-              border: "none",
-              boxShadow: "0 4px 20px rgba(44,95,45,0.25)",
+              bgcolor: 'primary.main',
+              color: 'primary.contrastText',
+              borderRadius: '0 0 10px 10px',
+              p: 3,
             }}
           >
-            <CardContent sx={{ p: 3 }}>
               <Typography
                 variant="caption"
                 sx={{
@@ -367,9 +369,8 @@ export default function Dashboard() {
                   Agregar
                 </Button>
               </Stack>
-            </CardContent>
-          </Card>
-        </Box>
+          </Box>
+        </Card>
 
         {/* Date period filter */}
         <Card sx={{ mt: 2 }}>
