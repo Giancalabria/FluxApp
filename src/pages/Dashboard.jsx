@@ -225,32 +225,18 @@ export default function Dashboard() {
       </Box>
 
       <Box sx={{ px: 2, pt: 2, pb: 1 }}>
-        {/* Currency tabs + Total Spent Card */}
-        <Card
-          sx={{
-            borderRadius: 3,
-            border: '1px solid',
-            borderColor: 'divider',
-            boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
-            overflow: 'visible',
-          }}
-        >
-          {/* Tab row (inside the card, like Mercado Pago) */}
+        {/* Currency tabs (on cream bg) + green card */}
+        <Box>
+          {/* Tab row — sits on the page background */}
           {ucLoading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 1.5 }}>
+            <Box sx={{ display: "flex", justifyContent: "center", py: 1.5 }}>
               <CircularProgress size={20} />
             </Box>
           ) : (
             <Stack
               direction="row"
-              spacing={0}
-              sx={{
-                overflowX: 'auto',
-                px: 1,
-                pt: 1,
-                borderBottom: '1px solid',
-                borderColor: 'divider',
-              }}
+              spacing={0.5}
+              sx={{ overflowX: "auto", pl: 0.5, pb: 0 }}
             >
               {userCurrencies.map((uc, idx) => {
                 const isActive = idx === activeCurrencyIdx;
@@ -260,18 +246,19 @@ export default function Dashboard() {
                     disableRipple
                     onClick={() => setActiveCurrencyIdx(idx)}
                     sx={{
-                      minWidth: 'auto',
+                      minWidth: "auto",
                       px: 1.5,
-                      py: 1,
-                      borderRadius: 0,
+                      py: 0.75,
+                      textTransform: "none",
                       fontWeight: isActive ? 700 : 500,
-                      fontSize: '0.88rem',
-                      color: isActive ? 'text.primary' : 'text.secondary',
-                      textTransform: 'none',
-                      borderBottom: '2px solid',
-                      borderColor: isActive ? 'primary.main' : 'transparent',
-                      bgcolor: 'transparent',
-                      '&:hover': { bgcolor: 'action.hover', borderColor: isActive ? 'primary.main' : 'action.hover' },
+                      fontSize: "0.88rem",
+                      color: isActive ? "#F2EFE9" : "text.secondary",
+                      bgcolor: isActive ? "primary.main" : "transparent",
+                      borderRadius: isActive ? "8px 8px 0 0" : "8px",
+                      boxShadow: "none",
+                      "&:hover": {
+                        bgcolor: isActive ? "primary.main" : "action.hover",
+                      },
                     }}
                   >
                     {uc.currency_code}
@@ -281,19 +268,21 @@ export default function Dashboard() {
               <Button
                 disableRipple
                 onClick={() => setAddCurrencyOpen(true)}
-                startIcon={<AddRoundedIcon sx={{ fontSize: 18 }} />}
+                startIcon={<AddRoundedIcon sx={{ fontSize: 16 }} />}
                 sx={{
-                  minWidth: 'auto',
+                  minWidth: "auto",
                   px: 1.5,
-                  py: 1,
-                  borderRadius: 0,
+                  py: 0.75,
+                  textTransform: "none",
                   fontWeight: 500,
-                  fontSize: '0.82rem',
-                  color: 'text.disabled',
-                  textTransform: 'none',
-                  borderBottom: '2px solid transparent',
-                  bgcolor: 'transparent',
-                  '&:hover': { bgcolor: 'action.hover', color: 'text.secondary' },
+                  fontSize: "0.82rem",
+                  color: "text.disabled",
+                  bgcolor: "transparent",
+                  borderRadius: "8px",
+                  "&:hover": {
+                    bgcolor: "action.hover",
+                    color: "text.secondary",
+                  },
                 }}
               >
                 Moneda
@@ -301,15 +290,18 @@ export default function Dashboard() {
             </Stack>
           )}
 
-          {/* Green content area */}
-          <Box
+          {/* Green card — active tab merges into it */}
+          <Card
             sx={{
-              bgcolor: 'primary.main',
-              color: 'primary.contrastText',
-              borderRadius: '0 0 10px 10px',
-              p: 3,
+              bgcolor: "primary.main",
+              color: "primary.contrastText",
+              borderRadius: 3,
+              borderTopLeftRadius: 0,
+              border: "none",
+              boxShadow: "0 4px 20px rgba(44,95,45,0.25)",
             }}
           >
+            <CardContent sx={{ p: 3 }}>
               <Typography
                 variant="caption"
                 sx={{
@@ -369,8 +361,9 @@ export default function Dashboard() {
                   Agregar
                 </Button>
               </Stack>
-          </Box>
-        </Card>
+            </CardContent>
+          </Card>
+        </Box>
 
         {/* Date period filter */}
         <Card sx={{ mt: 2 }}>
