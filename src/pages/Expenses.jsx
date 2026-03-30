@@ -83,7 +83,7 @@ export default function Expenses() {
 
   const range = useMemo(() => {
     if (periodMode === "all") {
-      return { from: null, to: null, label: "Todas las fechas" };
+      return { from: null, to: null, label: "Todo" };
     }
     if (periodMode === "week") {
       return getWeekRange(periodOffset);
@@ -316,7 +316,7 @@ export default function Expenses() {
                     }}
                   >
                     <Box sx={{ flex: 1, mr: 1 }}>
-                      <Typography variant="body2" fontWeight={600} noWrap>
+                      <Typography variant="body2" fontWeight={600}>
                         {t.description || "Sin descripción"}
                       </Typography>
                       <Stack

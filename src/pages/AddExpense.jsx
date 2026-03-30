@@ -580,7 +580,7 @@ export default function AddExpense() {
                                 }
                                 onChange={toggleSelectAllImportRows}
                                 inputProps={{
-                                  "aria-label": "Seleccionar todas las filas",
+                                  "aria-label": "Seleccionar  filas",
                                 }}
                               />
                             </TableCell>
