@@ -92,8 +92,8 @@ export default function AddExpense() {
 
   const handleManualSubmit = async (e) => {
     e.preventDefault();
-    if (!form.amount || !form.account_id) {
-      setManualError('Completá monto y cuenta.');
+    if (!form.amount || !form.account_id || !form.category_id) {
+      setManualError('Completá monto, cuenta y categoría.');
       return;
     }
     setManualError('');
@@ -107,7 +107,7 @@ export default function AddExpense() {
       currency_code: form.currency_code,
       description: form.description || null,
       date: form.date,
-      category_id: form.category_id || null,
+      category_id: form.category_id,
       classification: form.classification || null,
     });
     setManualBusy(false);
@@ -144,6 +144,8 @@ export default function AddExpense() {
     setImportError('');
     if (!parsed?.rows?.length) { setImportError('Sin filas para importar.'); return; }
     if (!importAccountId) { setImportError('Elegí una cuenta destino.'); return; }
+    const missingCategory = (parsed.rows || []).some((_, i) => !rowEdits[i]?.category_id);
+    if (missingCategory) { setImportError('Elegí una categoría para todas las filas.'); return; }
     const rows = parsed.rows.map((r, i) => {
       const edit = rowEdits[i] || {};
       // Per-row currency wins over global parsed.currency, which wins over user selection
@@ -157,7 +159,7 @@ export default function AddExpense() {
         currency_code: rowCurrency,
         description: r.description || 'Importado',
         date: r.date,
-        category_id: edit.category_id || null,
+        category_id: edit.category_id,
         classification: edit.classification || null,
       };
     });
@@ -371,13 +373,11 @@ export default function AddExpense() {
                                       cur.category_id = id;
                                       const cat = categories.find((c) => c.id === id);
                                       if (cat?.classification) cur.classification = cat.classification;
-                                      else if (!id) cur.classification = '';
                                       next[i] = cur;
                                       return next;
                                     });
                                   }}
                                 >
-                                  <MenuItem value=""><em>Ninguna</em></MenuItem>
                                   {categories.map((c) => (
                                     <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
                                   ))}
@@ -495,9 +495,9 @@ export default function AddExpense() {
                 name="category_id"
                 value={form.category_id}
                 onChange={handleFormChange}
+                required
                 fullWidth
               >
-                <MenuItem value=""><em>Sin categoría</em></MenuItem>
                 {categories.map((c) => (
                   <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
                 ))}

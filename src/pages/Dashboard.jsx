@@ -166,49 +166,76 @@ export default function Dashboard() {
       </Box>
 
       <Box sx={{ px: 2, pt: 2, pb: 1 }}>
-        {/* Currency tabs */}
-        {ucLoading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 1 }}><CircularProgress size={20} /></Box>
-        ) : (
-          <Stack direction="row" spacing={1} sx={{ overflowX: 'auto', pb: 0.5 }}>
-            {userCurrencies.map((uc, idx) => (
+        {/* Currency tabs + Total Spent Card (attached) */}
+        <Box sx={{ mt: 1.5 }}>
+          {ucLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}><CircularProgress size={20} /></Box>
+          ) : (
+            <Stack
+              direction="row"
+              spacing={1}
+              sx={{
+                overflowX: 'auto',
+                px: 1.5,
+                py: 1.25,
+                bgcolor: 'primary.main',
+                borderRadius: 2,
+                borderBottomLeftRadius: 0,
+                borderBottomRightRadius: 0,
+                boxShadow: '0 4px 20px rgba(44,95,45,0.18)',
+              }}
+            >
+              {userCurrencies.map((uc, idx) => (
+                <Chip
+                  key={uc.currency_code}
+                  label={uc.currency_code}
+                  onClick={() => setActiveCurrencyIdx(idx)}
+                  sx={{
+                    fontWeight: 800,
+                    fontSize: '0.85rem',
+                    height: 32,
+                    bgcolor: idx === activeCurrencyIdx ? '#F2EFE9' : 'rgba(242,239,233,0.12)',
+                    color: idx === activeCurrencyIdx ? '#1A3D1B' : 'rgba(242,239,233,0.92)',
+                    border: '1px solid',
+                    borderColor: idx === activeCurrencyIdx ? '#F2EFE9' : 'rgba(242,239,233,0.22)',
+                    borderRadius: 2,
+                    borderBottomLeftRadius: 0,
+                    borderBottomRightRadius: 0,
+                    '&:hover': { bgcolor: idx === activeCurrencyIdx ? '#F2EFE9' : 'rgba(242,239,233,0.18)' },
+                  }}
+                />
+              ))}
               <Chip
-                key={uc.currency_code}
-                label={uc.currency_code}
-                onClick={() => setActiveCurrencyIdx(idx)}
+                icon={<AddRoundedIcon fontSize="small" />}
+                label="Moneda"
+                variant="outlined"
+                onClick={() => setAddCurrencyOpen(true)}
                 sx={{
                   fontWeight: 700,
-                  fontSize: '0.85rem',
-                  bgcolor: idx === activeCurrencyIdx ? 'primary.main' : 'background.paper',
-                  color: idx === activeCurrencyIdx ? 'primary.contrastText' : 'text.primary',
-                  border: '1px solid',
-                  borderColor: idx === activeCurrencyIdx ? 'primary.main' : 'divider',
-                  '&:hover': { bgcolor: idx === activeCurrencyIdx ? 'primary.dark' : 'action.hover' },
+                  height: 32,
+                  color: '#F2EFE9',
+                  borderColor: 'rgba(242,239,233,0.4)',
+                  borderRadius: 2,
+                  borderBottomLeftRadius: 0,
+                  borderBottomRightRadius: 0,
+                  '&:hover': { bgcolor: 'rgba(242,239,233,0.12)', borderColor: 'rgba(242,239,233,0.55)' },
                 }}
               />
-            ))}
-            <Chip
-              icon={<AddRoundedIcon fontSize="small" />}
-              label="Moneda"
-              variant="outlined"
-              onClick={() => setAddCurrencyOpen(true)}
-              sx={{ fontWeight: 600, color: 'primary.main', borderColor: 'primary.light' }}
-            />
-          </Stack>
-        )}
+            </Stack>
+          )}
 
-        {/* Total Spent Card */}
-        <Card
-          sx={{
-            bgcolor: 'primary.main',
-            color: 'primary.contrastText',
-            borderRadius: 4,
-            mt: 2,
-            border: 'none',
-            boxShadow: '0 4px 20px rgba(44,95,45,0.25)',
-          }}
-        >
-          <CardContent sx={{ p: 3 }}>
+          <Card
+            sx={{
+              bgcolor: 'primary.main',
+              color: 'primary.contrastText',
+              borderRadius: 2,
+              borderTopLeftRadius: 0,
+              borderTopRightRadius: 0,
+              border: 'none',
+              boxShadow: '0 4px 20px rgba(44,95,45,0.25)',
+            }}
+          >
+            <CardContent sx={{ p: 3 }}>
             <Typography variant="caption" sx={{ color: 'rgba(242,239,233,0.7)', textTransform: 'uppercase', letterSpacing: 1.5 }}>
               Total gastado
             </Typography>
@@ -250,8 +277,9 @@ export default function Dashboard() {
                 Agregar
               </Button>
             </Stack>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </Box>
 
         {/* Date period filter */}
         <Card sx={{ mt: 2 }}>
