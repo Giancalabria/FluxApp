@@ -295,8 +295,10 @@ export default function Dashboard() {
             sx={{
               bgcolor: "primary.main",
               color: "primary.contrastText",
-              borderRadius: 3,
-              borderTopLeftRadius: activeCurrencyIdx === 0 ? 0 : undefined,
+              borderRadius:
+                activeCurrencyIdx === 0
+                  ? "0px 36px 36px 36px"
+                  : "36px",
               border: "none",
               boxShadow: "0 4px 20px rgba(44,95,45,0.25)",
             }}

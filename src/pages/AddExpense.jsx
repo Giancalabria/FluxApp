@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -37,6 +36,8 @@ import { useTransactions } from '../hooks/useTransactions';
 import { useUserCurrencies } from '../hooks/useUserCurrencies';
 import { BANK_IMPORT_OPTIONS, EXPENSE_CLASS_OPTIONS } from '../constants';
 import { formatCurrency, formatDate } from '../lib/formatters';
+import AddAccountDialog from '../components/common/AddAccountDialog';
+import AddCategoryDialog from '../components/common/AddCategoryDialog';
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
@@ -53,13 +54,12 @@ const emptyForm = {
 };
 
 export default function AddExpense() {
-  const navigate = useNavigate();
   const { user, getAccessToken } = useAuth();
   const { activeProfile } = useFinancialProfile();
   const profileId = activeProfile?.id;
 
-  const { accounts } = useAccounts(profileId);
-  const { categories } = useCategories(profileId);
+  const { accounts, refetch: refetchAccounts } = useAccounts(profileId);
+  const { categories, refetch: refetchCategories } = useCategories(profileId);
   const { currencies: userCurrencies } = useUserCurrencies(user?.id);
   const { createTransaction, createTransactions } = useTransactions({ financialProfileId: profileId });
 
@@ -69,6 +69,8 @@ export default function AddExpense() {
   const [manualBusy, setManualBusy] = useState(false);
   const [manualError, setManualError] = useState('');
   const [manualSuccess, setManualSuccess] = useState(false);
+  const [addAccountOpen, setAddAccountOpen] = useState(false);
+  const [addCategoryOpen, setAddCategoryOpen] = useState(false);
 
   // Import — global state that survives navigation
   const {
@@ -88,8 +90,12 @@ export default function AddExpense() {
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
-    if (value === '__add_account__' || value === '__add_category__') {
-      navigate('/profile');
+    if (value === '__add_account__') {
+      setAddAccountOpen(true);
+      return;
+    }
+    if (value === '__add_category__') {
+      setAddCategoryOpen(true);
       return;
     }
     setForm((prev) => {
@@ -178,7 +184,7 @@ export default function AddExpense() {
   const handleImportAccountChange = (e) => {
     const v = e.target.value;
     if (v === '__add_account__') {
-      navigate('/profile');
+      setAddAccountOpen(true);
       return;
     }
     setImportAccountId(v);
@@ -398,7 +404,7 @@ export default function AddExpense() {
                                   onChange={(e) => {
                                     const id = e.target.value;
                                     if (id === '__add_category__') {
-                                      navigate('/profile');
+                                      setAddCategoryOpen(true);
                                       return;
                                     }
                                     setRowEdits((prev) => {
@@ -569,6 +575,17 @@ export default function AddExpense() {
           </DialogActions>
         </form>
       </Dialog>
+
+      <AddAccountDialog
+        open={addAccountOpen}
+        onClose={() => setAddAccountOpen(false)}
+        onCreated={() => refetchAccounts()}
+      />
+      <AddCategoryDialog
+        open={addCategoryOpen}
+        onClose={() => setAddCategoryOpen(false)}
+        onCreated={() => refetchCategories()}
+      />
     </Box>
   );
 }

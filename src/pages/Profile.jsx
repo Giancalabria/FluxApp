@@ -35,6 +35,8 @@ import { useFinancialProfile } from '../context/FinancialProfileContext';
 import { accountService } from '../services/accountService';
 import { categoryService } from '../services/categoryService';
 import { EXPENSE_CLASS_OPTIONS } from '../constants';
+import AddAccountDialog from '../components/common/AddAccountDialog';
+import AddCategoryDialog from '../components/common/AddCategoryDialog';
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -57,19 +59,12 @@ export default function Profile() {
   const [addCurrencyOpen, setAddCurrencyOpen] = useState(false);
   const [addingCurrency, setAddingCurrency] = useState(false);
 
-  const [newAccountName, setNewAccountName] = useState('');
   const [addAccountOpen, setAddAccountOpen] = useState(false);
-  const [addingAccount, setAddingAccount] = useState(false);
-  const [accountError, setAccountError] = useState('');
 
   const [deleteAccountTarget, setDeleteAccountTarget] = useState(null);
   const [deletingAccount, setDeletingAccount] = useState(false);
 
-  const [newCategoryName, setNewCategoryName] = useState('');
-  const [newCategoryClass, setNewCategoryClass] = useState('');
   const [addCategoryOpen, setAddCategoryOpen] = useState(false);
-  const [addingCategory, setAddingCategory] = useState(false);
-  const [categoryError, setCategoryError] = useState('');
 
   const [deleteCategoryTarget, setDeleteCategoryTarget] = useState(null);
   const [deletingCategory, setDeletingCategory] = useState(false);
@@ -102,26 +97,6 @@ export default function Profile() {
     setNewCurrencyCode('');
   };
 
-  const handleAddAccount = async () => {
-    const name = newAccountName.trim();
-    if (!name) { setAccountError('Ingresá un nombre.'); return; }
-    setAddingAccount(true);
-    const { error } = await accountService.create({
-      name,
-      financial_profile_id: profileId,
-      user_id: user.id,
-    });
-    setAddingAccount(false);
-    if (error) {
-      setAccountError(error.message || 'No se pudo crear la cuenta.');
-    } else {
-      setAddAccountOpen(false);
-      setNewAccountName('');
-      setAccountError('');
-      await refetchAccounts();
-    }
-  };
-
   const handleDeleteAccount = async () => {
     if (!deleteAccountTarget) return;
     setDeletingAccount(true);
@@ -129,28 +104,6 @@ export default function Profile() {
     setDeletingAccount(false);
     setDeleteAccountTarget(null);
     await refetchAccounts();
-  };
-
-  const handleAddCategory = async () => {
-    const name = newCategoryName.trim();
-    if (!name) { setCategoryError('Ingresá un nombre.'); return; }
-    setAddingCategory(true);
-    const { error } = await categoryService.create({
-      name,
-      classification: newCategoryClass || null,
-      financial_profile_id: profileId,
-      user_id: user.id,
-    });
-    setAddingCategory(false);
-    if (error) {
-      setCategoryError(error.message || 'No se pudo crear la categoría.');
-    } else {
-      setAddCategoryOpen(false);
-      setNewCategoryName('');
-      setNewCategoryClass('');
-      setCategoryError('');
-      await refetchCategories();
-    }
   };
 
   const handleDeleteCategory = async () => {
@@ -390,62 +343,16 @@ export default function Profile() {
         </DialogActions>
       </Dialog>
 
-      {/* Add account dialog */}
-      <Dialog open={addAccountOpen} onClose={() => setAddAccountOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle>Nueva cuenta</DialogTitle>
-        <DialogContent sx={{ pt: 1 }}>
-          {accountError && <Alert severity="error" sx={{ mb: 1.5 }}>{accountError}</Alert>}
-          <TextField
-            label="Nombre (ej: Santander, Mercado Pago)"
-            value={newAccountName}
-            onChange={(e) => setNewAccountName(e.target.value)}
-            fullWidth
-            autoFocus
-            sx={{ mt: 1 }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => { setAddAccountOpen(false); setAccountError(''); }}>Cancelar</Button>
-          <Button variant="contained" onClick={handleAddAccount} disabled={addingAccount}>
-            {addingAccount ? <CircularProgress size={20} color="inherit" /> : 'Crear'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Add category dialog */}
-      <Dialog open={addCategoryOpen} onClose={() => setAddCategoryOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle>Nueva categoría</DialogTitle>
-        <DialogContent sx={{ pt: 1 }}>
-          {categoryError && <Alert severity="error" sx={{ mb: 1.5 }}>{categoryError}</Alert>}
-          <Stack spacing={1.5} sx={{ mt: 1 }}>
-            <TextField
-              label="Nombre (ej: Supermercado, Salud)"
-              value={newCategoryName}
-              onChange={(e) => setNewCategoryName(e.target.value)}
-              fullWidth
-              autoFocus
-            />
-            <TextField
-              select
-              label="Tipo (opcional)"
-              value={newCategoryClass}
-              onChange={(e) => setNewCategoryClass(e.target.value)}
-              fullWidth
-            >
-              <MenuItem value=""><em>Sin tipo</em></MenuItem>
-              {EXPENSE_CLASS_OPTIONS.map((c) => (
-                <MenuItem key={c.value} value={c.value}>{c.label}</MenuItem>
-              ))}
-            </TextField>
-          </Stack>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => { setAddCategoryOpen(false); setCategoryError(''); }}>Cancelar</Button>
-          <Button variant="contained" onClick={handleAddCategory} disabled={addingCategory}>
-            {addingCategory ? <CircularProgress size={20} color="inherit" /> : 'Crear'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <AddAccountDialog
+        open={addAccountOpen}
+        onClose={() => setAddAccountOpen(false)}
+        onCreated={() => refetchAccounts()}
+      />
+      <AddCategoryDialog
+        open={addCategoryOpen}
+        onClose={() => setAddCategoryOpen(false)}
+        onCreated={() => refetchCategories()}
+      />
 
       {/* Delete account confirm */}
       <Dialog open={!!deleteAccountTarget} onClose={() => setDeleteAccountTarget(null)} maxWidth="xs" fullWidth>
