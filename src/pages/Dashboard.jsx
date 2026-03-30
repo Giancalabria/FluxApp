@@ -180,6 +180,7 @@ export default function Dashboard() {
                 py: 0.75,
                 bgcolor: 'transparent',
                 mb: -1, // overlap card like attached tabs
+                ml: -1,
               }}
             >
               {userCurrencies.map((uc, idx) => (
@@ -199,7 +200,7 @@ export default function Dashboard() {
                     bgcolor: idx === activeCurrencyIdx ? 'primary.main' : 'background.paper',
                     color: idx === activeCurrencyIdx ? 'primary.contrastText' : 'text.primary',
                     boxShadow: idx === activeCurrencyIdx ? '0 6px 18px rgba(44,95,45,0.18)' : 'none',
-                    zIndex: idx === activeCurrencyIdx ? 2 : 1,
+                    zIndex: idx === activeCurrencyIdx ? 2 : 0,
                     '& .MuiChip-label': { px: 1.25 },
                     '&:hover': {
                       bgcolor: idx === activeCurrencyIdx ? 'primary.dark' : 'action.hover',
