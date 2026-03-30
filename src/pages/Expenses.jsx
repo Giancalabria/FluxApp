@@ -146,14 +146,14 @@ export default function Expenses() {
         <Card sx={{ mb: 2 }}>
           <CardContent sx={{ p: 2 }}>
             <Stack spacing={1.5}>
-              <Stack direction="row" spacing={1}>
+              <Stack direction="row" spacing={1} useFlexGap>
                 <TextField
                   select
                   label="Moneda"
                   size="small"
                   value={currencyFilter}
                   onChange={(e) => setCurrencyFilter(e.target.value)}
-                  sx={{ flex: 1 }}
+                  sx={{ flex: 1, minWidth: 0 }}
                 >
                   <MenuItem value="">Todas</MenuItem>
                   {userCurrencies.map((uc) => (
@@ -168,7 +168,7 @@ export default function Expenses() {
                   size="small"
                   value={accountFilter}
                   onChange={(e) => setAccountFilter(e.target.value)}
-                  sx={{ flex: 1 }}
+                  sx={{ flex: 1, minWidth: 0 }}
                 >
                   <MenuItem value="">Todas</MenuItem>
                   {accounts.map((a) => (
@@ -176,36 +176,38 @@ export default function Expenses() {
                       {a.name}
                     </MenuItem>
                   ))}
-                  <TextField
-                    select
-                    label="Categoría"
-                    size="small"
-                    value={categoryFilter}
-                    onChange={(e) => setCategoryFilter(e.target.value)}
-                    fullWidth
-                  >
-                    <MenuItem value="">Todas</MenuItem>
-                    {categories.map((c) => (
-                      <MenuItem key={c.id} value={c.id}>
-                        {c.name}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                  <TextField
-                    select
-                    label="Tipo de gasto"
-                    size="small"
-                    value={classificationFilter}
-                    onChange={(e) => setClassificationFilter(e.target.value)}
-                    fullWidth
-                  >
-                    <MenuItem value="">Todos</MenuItem>
-                    {EXPENSE_CLASS_OPTIONS.map((c) => (
-                      <MenuItem key={c.value} value={c.value}>
-                        {c.label}
-                      </MenuItem>
-                    ))}
-                  </TextField>
+                </TextField>
+              </Stack>
+              <Stack direction="row" spacing={1} useFlexGap>
+                <TextField
+                  select
+                  label="Categoría"
+                  size="small"
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  sx={{ flex: 1, minWidth: 0 }}
+                >
+                  <MenuItem value="">Todas</MenuItem>
+                  {categories.map((c) => (
+                    <MenuItem key={c.id} value={c.id}>
+                      {c.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+                <TextField
+                  select
+                  label="Tipo de gasto"
+                  size="small"
+                  value={classificationFilter}
+                  onChange={(e) => setClassificationFilter(e.target.value)}
+                  sx={{ flex: 1, minWidth: 0 }}
+                >
+                  <MenuItem value="">Todos</MenuItem>
+                  {EXPENSE_CLASS_OPTIONS.map((c) => (
+                    <MenuItem key={c.value} value={c.value}>
+                      {c.label}
+                    </MenuItem>
+                  ))}
                 </TextField>
               </Stack>
 
