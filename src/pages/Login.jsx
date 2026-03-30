@@ -35,6 +35,7 @@ export default function Login() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -61,6 +62,12 @@ export default function Login() {
     e.preventDefault();
     setError('');
     setInfo('');
+
+    if (isSignUp && password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
     setLoading(true);
 
     const { error: err } = isSignUp
@@ -72,6 +79,7 @@ export default function Login() {
     } else if (isSignUp) {
       setEmail('');
       setPassword('');
+      setConfirmPassword('');
       setIsSignUp(false);
       setInfo('Account created! You can now sign in.');
     } else {
@@ -168,12 +176,41 @@ export default function Login() {
                   },
                 }}
               />
+              {isSignUp && (
+                <TextField
+                  label="Confirm password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  fullWidth
+                  error={!!confirmPassword && password !== confirmPassword}
+                  helperText={confirmPassword && password !== confirmPassword ? 'Passwords do not match.' : ' '}
+                  slotProps={{
+                    htmlInput: { minLength: 6 },
+                    input: {
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={() => setShowPassword((prev) => !prev)}
+                            edge="end"
+                            aria-label={showPassword ? 'Hide password' : 'Show password'}
+                            size="small"
+                          >
+                            {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
+                />
+              )}
               <Button
                 type="submit"
                 variant="contained"
                 size="large"
                 fullWidth
-                disabled={loading}
+                disabled={loading || (isSignUp && password !== confirmPassword)}
               >
                 {loading ? <CircularProgress size={24} /> : isSignUp ? 'Sign Up' : 'Sign In'}
               </Button>
@@ -189,6 +226,8 @@ export default function Login() {
                 setIsSignUp((prev) => !prev);
                 setError('');
                 setInfo('');
+                setPassword('');
+                setConfirmPassword('');
               }}
             >
               {isSignUp ? 'Sign In' : 'Sign Up'}
