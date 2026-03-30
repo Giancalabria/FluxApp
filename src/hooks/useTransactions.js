@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { transactionService } from '../services/transactionService';
+import { useCallback, useEffect, useState } from "react";
+import { transactionService } from "../services/transactionService";
 
 export function useTransactions(filters = {}) {
   const [transactions, setTransactions] = useState([]);
@@ -15,7 +15,10 @@ export function useTransactions(filters = {}) {
       return;
     }
     setLoading(true);
-    const { data, error: err } = await transactionService.getAll({ ...rest, financialProfileId });
+    const { data, error: err } = await transactionService.getAll({
+      ...rest,
+      financialProfileId,
+    });
     if (err) {
       setError(err.message);
       setTransactions([]);
@@ -24,7 +27,7 @@ export function useTransactions(filters = {}) {
       setTransactions(data ?? []);
     }
     setLoading(false);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [financialProfileId, JSON.stringify(rest)]);
 
   useEffect(() => {

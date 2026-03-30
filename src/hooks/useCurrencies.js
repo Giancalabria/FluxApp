@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { currencyService } from '../services/currencyService';
+import { useCallback, useEffect, useState } from "react";
+import { currencyService } from "../services/currencyService";
 
 export function useCurrencies() {
   const [currencies, setCurrencies] = useState([]);

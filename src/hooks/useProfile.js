@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { profileService } from '../services/profileService';
+import { useCallback, useEffect, useState } from "react";
+import { profileService } from "../services/profileService";
 
 export function useProfile(userId) {
   const [profile, setProfile] = useState(null);
@@ -14,7 +14,7 @@ export function useProfile(userId) {
     }
     setLoading(true);
     const { data, error: err } = await profileService.getByUserId(userId);
-    if (err?.code === 'PGRST116') {
+    if (err?.code === "PGRST116") {
       // No profile yet (new user hasn't onboarded)
       setProfile(null);
       setError(null);
@@ -32,7 +32,10 @@ export function useProfile(userId) {
   }, [fetch]);
 
   const updateUsername = async (username) => {
-    const { data, error: err } = await profileService.updateUsername(userId, username);
+    const { data, error: err } = await profileService.updateUsername(
+      userId,
+      username,
+    );
     if (!err && data) setProfile(data);
     return { data, error: err };
   };

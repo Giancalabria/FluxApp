@@ -1,22 +1,30 @@
-import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
-import AppLayout from '../components/layout/AppLayout';
-import Dashboard from '../pages/Dashboard';
-import Expenses from '../pages/Expenses';
-import AddExpense from '../pages/AddExpense';
-import Profile from '../pages/Profile';
-import Onboarding from '../pages/Onboarding';
-import Login from '../pages/Login';
-import { useAuth } from '../context/AuthContext';
-import { useFinancialProfile } from '../context/FinancialProfileContext';
-import { Box, CircularProgress } from '@mui/material';
+import { Routes, Route, Navigate, Outlet } from "react-router-dom";
+import AppLayout from "../components/layout/AppLayout";
+import Dashboard from "../pages/Dashboard";
+import Expenses from "../pages/Expenses";
+import AddExpense from "../pages/AddExpense";
+import Profile from "../pages/Profile";
+import Onboarding from "../pages/Onboarding";
+import Login from "../pages/Login";
+import { useAuth } from "../context/AuthContext";
+import { useFinancialProfile } from "../context/FinancialProfileContext";
+import { Box, CircularProgress } from "@mui/material";
 
 function ProtectedRoute() {
   const { user, loading } = useAuth();
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100dvh', bgcolor: 'background.default' }}>
-        <CircularProgress sx={{ color: 'primary.main' }} />
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100dvh",
+          bgcolor: "background.default",
+        }}
+      >
+        <CircularProgress sx={{ color: "primary.main" }} />
       </Box>
     );
   }
@@ -30,8 +38,16 @@ function RequireProfile() {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100dvh', bgcolor: 'background.default' }}>
-        <CircularProgress sx={{ color: 'primary.main' }} />
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100dvh",
+          bgcolor: "background.default",
+        }}
+      >
+        <CircularProgress sx={{ color: "primary.main" }} />
       </Box>
     );
   }

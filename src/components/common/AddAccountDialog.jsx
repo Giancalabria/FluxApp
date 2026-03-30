@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -8,10 +8,10 @@ import {
   TextField,
   Alert,
   CircularProgress,
-} from '@mui/material';
-import { useAuth } from '../../context/AuthContext';
-import { useFinancialProfile } from '../../context/FinancialProfileContext';
-import { accountService } from '../../services/accountService';
+} from "@mui/material";
+import { useAuth } from "../../context/AuthContext";
+import { useFinancialProfile } from "../../context/FinancialProfileContext";
+import { accountService } from "../../services/accountService";
 
 /**
  * @param {object} props
@@ -24,33 +24,32 @@ export default function AddAccountDialog({ open, onClose, onCreated }) {
   const { activeProfile } = useFinancialProfile();
   const profileId = activeProfile?.id;
 
-  const [name, setName] = useState('');
+  const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (!open) {
-      setName('');
-      setError('');
-    }
-  }, [open]);
+  const resetForm = () => {
+    setName("");
+    setError("");
+  };
 
   const handleClose = () => {
-    if (!saving) onClose();
+    if (saving) return;
+    onClose();
   };
 
   const handleSubmit = async () => {
     const trimmed = name.trim();
     if (!trimmed) {
-      setError('Ingresá un nombre.');
+      setError("Ingresá un nombre.");
       return;
     }
     if (!user?.id || !profileId) {
-      setError('Perfil no disponible.');
+      setError("Perfil no disponible.");
       return;
     }
     setSaving(true);
-    setError('');
+    setError("");
     const { data, error: err } = await accountService.create({
       name: trimmed,
       financial_profile_id: profileId,
@@ -58,7 +57,7 @@ export default function AddAccountDialog({ open, onClose, onCreated }) {
     });
     setSaving(false);
     if (err) {
-      setError(err.message || 'No se pudo crear la cuenta.');
+      setError(err.message || "No se pudo crear la cuenta.");
       return;
     }
     onCreated?.(data);
@@ -66,10 +65,20 @@ export default function AddAccountDialog({ open, onClose, onCreated }) {
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="xs"
+      fullWidth
+      slotProps={{ transition: { onExited: resetForm } }}
+    >
       <DialogTitle>Nueva cuenta</DialogTitle>
       <DialogContent sx={{ pt: 1 }}>
-        {error && <Alert severity="error" sx={{ mb: 1.5 }}>{error}</Alert>}
+        {error && (
+          <Alert severity="error" sx={{ mb: 1.5 }}>
+            {error}
+          </Alert>
+        )}
         <TextField
           label="Nombre (ej: Santander, Mercado Pago)"
           value={name}
@@ -80,9 +89,11 @@ export default function AddAccountDialog({ open, onClose, onCreated }) {
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} disabled={saving}>Cancelar</Button>
+        <Button onClick={handleClose} disabled={saving}>
+          Cancelar
+        </Button>
         <Button variant="contained" onClick={handleSubmit} disabled={saving}>
-          {saving ? <CircularProgress size={20} color="inherit" /> : 'Crear'}
+          {saving ? <CircularProgress size={20} color="inherit" /> : "Crear"}
         </Button>
       </DialogActions>
     </Dialog>

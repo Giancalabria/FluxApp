@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -10,11 +10,11 @@ import {
   Alert,
   CircularProgress,
   Stack,
-} from '@mui/material';
-import { useAuth } from '../../context/AuthContext';
-import { useFinancialProfile } from '../../context/FinancialProfileContext';
-import { categoryService } from '../../services/categoryService';
-import { EXPENSE_CLASS_OPTIONS } from '../../constants';
+} from "@mui/material";
+import { useAuth } from "../../context/AuthContext";
+import { useFinancialProfile } from "../../context/FinancialProfileContext";
+import { categoryService } from "../../services/categoryService";
+import { EXPENSE_CLASS_OPTIONS } from "../../constants";
 
 /**
  * @param {object} props
@@ -27,35 +27,34 @@ export default function AddCategoryDialog({ open, onClose, onCreated }) {
   const { activeProfile } = useFinancialProfile();
   const profileId = activeProfile?.id;
 
-  const [name, setName] = useState('');
-  const [classification, setClassification] = useState('');
+  const [name, setName] = useState("");
+  const [classification, setClassification] = useState("");
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (!open) {
-      setName('');
-      setClassification('');
-      setError('');
-    }
-  }, [open]);
+  const resetForm = () => {
+    setName("");
+    setClassification("");
+    setError("");
+  };
 
   const handleClose = () => {
-    if (!saving) onClose();
+    if (saving) return;
+    onClose();
   };
 
   const handleSubmit = async () => {
     const trimmed = name.trim();
     if (!trimmed) {
-      setError('Ingresá un nombre.');
+      setError("Ingresá un nombre.");
       return;
     }
     if (!user?.id || !profileId) {
-      setError('Perfil no disponible.');
+      setError("Perfil no disponible.");
       return;
     }
     setSaving(true);
-    setError('');
+    setError("");
     const { data, error: err } = await categoryService.create({
       name: trimmed,
       classification: classification || null,
@@ -64,7 +63,7 @@ export default function AddCategoryDialog({ open, onClose, onCreated }) {
     });
     setSaving(false);
     if (err) {
-      setError(err.message || 'No se pudo crear la categoría.');
+      setError(err.message || "No se pudo crear la categoría.");
       return;
     }
     onCreated?.(data);
@@ -72,10 +71,20 @@ export default function AddCategoryDialog({ open, onClose, onCreated }) {
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="xs"
+      fullWidth
+      slotProps={{ transition: { onExited: resetForm } }}
+    >
       <DialogTitle>Nueva categoría</DialogTitle>
       <DialogContent sx={{ pt: 1 }}>
-        {error && <Alert severity="error" sx={{ mb: 1.5 }}>{error}</Alert>}
+        {error && (
+          <Alert severity="error" sx={{ mb: 1.5 }}>
+            {error}
+          </Alert>
+        )}
         <Stack spacing={1.5} sx={{ mt: 1 }}>
           <TextField
             label="Nombre (ej: Supermercado, Salud)"
@@ -91,17 +100,23 @@ export default function AddCategoryDialog({ open, onClose, onCreated }) {
             onChange={(e) => setClassification(e.target.value)}
             fullWidth
           >
-            <MenuItem value=""><em>Sin tipo</em></MenuItem>
+            <MenuItem value="">
+              <em>Sin tipo</em>
+            </MenuItem>
             {EXPENSE_CLASS_OPTIONS.map((c) => (
-              <MenuItem key={c.value} value={c.value}>{c.label}</MenuItem>
+              <MenuItem key={c.value} value={c.value}>
+                {c.label}
+              </MenuItem>
             ))}
           </TextField>
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} disabled={saving}>Cancelar</Button>
+        <Button onClick={handleClose} disabled={saving}>
+          Cancelar
+        </Button>
         <Button variant="contained" onClick={handleSubmit} disabled={saving}>
-          {saving ? <CircularProgress size={20} color="inherit" /> : 'Crear'}
+          {saving ? <CircularProgress size={20} color="inherit" /> : "Crear"}
         </Button>
       </DialogActions>
     </Dialog>

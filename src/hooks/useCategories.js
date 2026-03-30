@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { categoryService } from '../services/categoryService';
+import { useCallback, useEffect, useState } from "react";
+import { categoryService } from "../services/categoryService";
 
 export function useCategories(financialProfileId) {
   const [categories, setCategories] = useState([]);
@@ -14,7 +14,8 @@ export function useCategories(financialProfileId) {
       return;
     }
     setLoading(true);
-    const { data, error: err } = await categoryService.getAll(financialProfileId);
+    const { data, error: err } =
+      await categoryService.getAll(financialProfileId);
     if (err) {
       setError(err.message);
     } else {

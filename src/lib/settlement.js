@@ -7,7 +7,8 @@ export function computeSettlement(members, expenses, splits) {
   memberIds.forEach((id) => (totalPaid[id] = 0));
   expenses.forEach((e) => {
     const id = e.paid_by_member_id;
-    if (memberIds.has(id)) totalPaid[id] = (totalPaid[id] || 0) + Number(e.amount);
+    if (memberIds.has(id))
+      totalPaid[id] = (totalPaid[id] || 0) + Number(e.amount);
   });
 
   const totalOwed = {};

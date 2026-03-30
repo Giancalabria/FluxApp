@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Card,
@@ -14,17 +14,17 @@ import {
   IconButton,
   InputAdornment,
   Collapse,
-} from '@mui/material';
-import VisibilityIcon from '@mui/icons-material/VisibilityRounded';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOffRounded';
-import { useAuth } from '../context/AuthContext';
+} from "@mui/material";
+import VisibilityIcon from "@mui/icons-material/VisibilityRounded";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOffRounded";
+import { useAuth } from "../context/AuthContext";
 
 function isStandalone() {
-  if (typeof window === 'undefined') return true;
+  if (typeof window === "undefined") return true;
   return (
-    window.matchMedia('(display-mode: standalone)').matches ||
+    window.matchMedia("(display-mode: standalone)").matches ||
     window.navigator.standalone === true ||
-    document.referrer.includes('android-app://')
+    document.referrer.includes("android-app://")
   );
 }
 
@@ -33,38 +33,38 @@ export default function Login() {
   const { user, loading: authLoading, signIn, signUp } = useAuth();
 
   const [isSignUp, setIsSignUp] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [info, setInfo] = useState('');
+  const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
   const [showInstallHint, setShowInstallHint] = useState(false);
 
   useEffect(() => {
     if (!authLoading && user) {
-      navigate('/dashboard', { replace: true });
+      navigate("/dashboard", { replace: true });
     }
   }, [authLoading, user, navigate]);
 
   useEffect(() => {
-    const hideHint = sessionStorage.getItem('fluxapp-hide-install-hint');
+    const hideHint = sessionStorage.getItem("fluxapp-hide-install-hint");
     setShowInstallHint(!isStandalone() && !hideHint);
   }, []);
 
   const dismissInstallHint = () => {
     setShowInstallHint(false);
-    sessionStorage.setItem('fluxapp-hide-install-hint', '1');
+    sessionStorage.setItem("fluxapp-hide-install-hint", "1");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setInfo('');
+    setError("");
+    setInfo("");
 
     if (isSignUp && password !== confirmPassword) {
-      setError('Passwords do not match.');
+      setError("Passwords do not match.");
       return;
     }
 
@@ -77,13 +77,13 @@ export default function Login() {
     if (err) {
       setError(err.message);
     } else if (isSignUp) {
-      setEmail('');
-      setPassword('');
-      setConfirmPassword('');
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
       setIsSignUp(false);
-      setInfo('Account created! You can now sign in.');
+      setInfo("Account created! You can now sign in.");
     } else {
-      navigate('/dashboard');
+      navigate("/dashboard");
     }
 
     setLoading(false);
@@ -93,11 +93,11 @@ export default function Login() {
     return (
       <Box
         sx={{
-          minHeight: '100dvh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          bgcolor: 'background.default',
+          minHeight: "100dvh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          bgcolor: "background.default",
         }}
       >
         <CircularProgress />
@@ -112,21 +112,32 @@ export default function Login() {
   return (
     <Box
       sx={{
-        minHeight: '100dvh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        bgcolor: 'background.default',
+        minHeight: "100dvh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        bgcolor: "background.default",
         p: 2,
       }}
     >
-      <Card sx={{ width: '100%', maxWidth: 400 }}>
+      <Card sx={{ width: "100%", maxWidth: 400 }}>
         <CardContent sx={{ p: 4 }}>
-          <Typography variant="h4" fontWeight={800} color="primary" textAlign="center" gutterBottom>
+          <Typography
+            variant="h4"
+            fontWeight={800}
+            color="primary"
+            textAlign="center"
+            gutterBottom
+          >
             FluxApp
           </Typography>
-          <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mb: 3 }}>
-            {isSignUp ? 'Create your account' : 'Sign in to your account'}
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            textAlign="center"
+            sx={{ mb: 3 }}
+          >
+            {isSignUp ? "Create your account" : "Sign in to your account"}
           </Typography>
 
           {error && (
@@ -153,7 +164,7 @@ export default function Login() {
               />
               <TextField
                 label="Password"
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -166,10 +177,16 @@ export default function Login() {
                         <IconButton
                           onClick={() => setShowPassword((prev) => !prev)}
                           edge="end"
-                          aria-label={showPassword ? 'Hide password' : 'Show password'}
+                          aria-label={
+                            showPassword ? "Hide password" : "Show password"
+                          }
                           size="small"
                         >
-                          {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                          {showPassword ? (
+                            <VisibilityOffIcon />
+                          ) : (
+                            <VisibilityIcon />
+                          )}
                         </IconButton>
                       </InputAdornment>
                     ),
@@ -179,13 +196,17 @@ export default function Login() {
               {isSignUp && (
                 <TextField
                   label="Confirm password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                   fullWidth
                   error={!!confirmPassword && password !== confirmPassword}
-                  helperText={confirmPassword && password !== confirmPassword ? 'Passwords do not match.' : ' '}
+                  helperText={
+                    confirmPassword && password !== confirmPassword
+                      ? "Passwords do not match."
+                      : " "
+                  }
                   slotProps={{
                     htmlInput: { minLength: 6 },
                     input: {
@@ -194,10 +215,16 @@ export default function Login() {
                           <IconButton
                             onClick={() => setShowPassword((prev) => !prev)}
                             edge="end"
-                            aria-label={showPassword ? 'Hide password' : 'Show password'}
+                            aria-label={
+                              showPassword ? "Hide password" : "Show password"
+                            }
                             size="small"
                           >
-                            {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                            {showPassword ? (
+                              <VisibilityOffIcon />
+                            ) : (
+                              <VisibilityIcon />
+                            )}
                           </IconButton>
                         </InputAdornment>
                       ),
@@ -212,25 +239,31 @@ export default function Login() {
                 fullWidth
                 disabled={loading || (isSignUp && password !== confirmPassword)}
               >
-                {loading ? <CircularProgress size={24} /> : isSignUp ? 'Sign Up' : 'Sign In'}
+                {loading ? (
+                  <CircularProgress size={24} />
+                ) : isSignUp ? (
+                  "Sign Up"
+                ) : (
+                  "Sign In"
+                )}
               </Button>
             </Stack>
           </form>
 
           <Typography variant="body2" textAlign="center" sx={{ mt: 3 }}>
-            {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
+            {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
             <Link
               component="button"
               variant="body2"
               onClick={() => {
                 setIsSignUp((prev) => !prev);
-                setError('');
-                setInfo('');
-                setPassword('');
-                setConfirmPassword('');
+                setError("");
+                setInfo("");
+                setPassword("");
+                setConfirmPassword("");
               }}
             >
-              {isSignUp ? 'Sign In' : 'Sign Up'}
+              {isSignUp ? "Sign In" : "Sign Up"}
             </Link>
           </Typography>
         </CardContent>

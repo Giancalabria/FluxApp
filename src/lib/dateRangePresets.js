@@ -1,7 +1,7 @@
 export function toISODate(d) {
   const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
 }
 
@@ -12,8 +12,8 @@ export function todayLocal() {
 export function dateRangeToList(dateFrom, dateTo) {
   if (!dateFrom || !dateTo || dateFrom > dateTo) return [];
   const list = [];
-  const start = new Date(dateFrom + 'T12:00:00');
-  const end = new Date(dateTo + 'T12:00:00');
+  const start = new Date(dateFrom + "T12:00:00");
+  const end = new Date(dateTo + "T12:00:00");
   for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
     list.push(toISODate(d));
   }
@@ -29,19 +29,19 @@ export function getPresetRange(preset) {
   const dayOfWeek = today.getDay();
 
   switch (preset) {
-    case 'all_time':
+    case "all_time":
       return null;
-    case 'today': {
+    case "today": {
       const s = toISODate(today);
       return { dateFrom: s, dateTo: s };
     }
-    case 'this_week': {
+    case "this_week": {
       const daysSinceMonday = (dayOfWeek + 6) % 7;
       const monday = new Date(today);
       monday.setDate(d - daysSinceMonday);
       return { dateFrom: toISODate(monday), dateTo: toISODate(today) };
     }
-    case 'last_week': {
+    case "last_week": {
       const daysSinceMonday = (dayOfWeek + 6) % 7;
       const lastMonday = new Date(today);
       lastMonday.setDate(d - daysSinceMonday - 7);
@@ -49,20 +49,23 @@ export function getPresetRange(preset) {
       lastSunday.setDate(lastMonday.getDate() + 6);
       return { dateFrom: toISODate(lastMonday), dateTo: toISODate(lastSunday) };
     }
-    case 'this_month': {
+    case "this_month": {
       const first = new Date(y, m, 1);
       return { dateFrom: toISODate(first), dateTo: toISODate(today) };
     }
-    case 'last_month': {
+    case "last_month": {
       const firstLastMonth = new Date(y, m - 1, 1);
       const lastLastMonth = new Date(y, m, 0);
-      return { dateFrom: toISODate(firstLastMonth), dateTo: toISODate(lastLastMonth) };
+      return {
+        dateFrom: toISODate(firstLastMonth),
+        dateTo: toISODate(lastLastMonth),
+      };
     }
-    case 'this_year': {
+    case "this_year": {
       const jan1 = new Date(y, 0, 1);
       return { dateFrom: toISODate(jan1), dateTo: toISODate(today) };
     }
-    case 'last_year': {
+    case "last_year": {
       const jan1Last = new Date(y - 1, 0, 1);
       const dec31Last = new Date(y - 1, 11, 31);
       return { dateFrom: toISODate(jan1Last), dateTo: toISODate(dec31Last) };
@@ -73,13 +76,13 @@ export function getPresetRange(preset) {
 }
 
 export const DATE_RANGE_PRESET_OPTIONS = [
-  { value: 'all_time', label: 'All time' },
-  { value: 'today', label: 'Today' },
-  { value: 'this_week', label: 'This week' },
-  { value: 'last_week', label: 'Last week' },
-  { value: 'this_month', label: 'This month' },
-  { value: 'last_month', label: 'Last month' },
-  { value: 'this_year', label: 'This year' },
-  { value: 'last_year', label: 'Last year' },
-  { value: 'custom', label: 'Custom' },
+  { value: "all_time", label: "All time" },
+  { value: "today", label: "Today" },
+  { value: "this_week", label: "This week" },
+  { value: "last_week", label: "Last week" },
+  { value: "this_month", label: "This month" },
+  { value: "last_month", label: "Last month" },
+  { value: "this_year", label: "This year" },
+  { value: "last_year", label: "Last year" },
+  { value: "custom", label: "Custom" },
 ];

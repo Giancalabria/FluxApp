@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { userCurrencyService } from '../services/userCurrencyService';
+import { useCallback, useEffect, useState } from "react";
+import { userCurrencyService } from "../services/userCurrencyService";
 
 export function useUserCurrencies(userId) {
   const [currencies, setCurrencies] = useState([]);
@@ -29,16 +29,29 @@ export function useUserCurrencies(userId) {
   }, [fetch]);
 
   const addCurrency = async (currencyCode) => {
-    const { data, error: err } = await userCurrencyService.add(userId, currencyCode);
+    const { data, error: err } = await userCurrencyService.add(
+      userId,
+      currencyCode,
+    );
     if (!err) await fetch();
     return { data, error: err };
   };
 
   const removeCurrency = async (currencyCode) => {
-    const { error: err } = await userCurrencyService.remove(userId, currencyCode);
+    const { error: err } = await userCurrencyService.remove(
+      userId,
+      currencyCode,
+    );
     if (!err) await fetch();
     return { error: err };
   };
 
-  return { currencies, loading, error, refetch: fetch, addCurrency, removeCurrency };
+  return {
+    currencies,
+    loading,
+    error,
+    refetch: fetch,
+    addCurrency,
+    removeCurrency,
+  };
 }

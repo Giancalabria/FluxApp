@@ -1,5 +1,5 @@
-import { createContext, useContext, useEffect, useState, useMemo } from 'react';
-import { supabase } from '../lib/supabase';
+import { createContext, useContext, useEffect, useState, useMemo } from "react";
+import { supabase } from "../lib/supabase";
 
 const AuthContext = createContext(undefined);
 
@@ -25,8 +25,7 @@ export function AuthProvider({ children }) {
   const signIn = (email, password) =>
     supabase.auth.signInWithPassword({ email, password });
 
-  const signUp = (email, password) =>
-    supabase.auth.signUp({ email, password });
+  const signUp = (email, password) => supabase.auth.signUp({ email, password });
 
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -55,7 +54,7 @@ export function AuthProvider({ children }) {
       updatePassword,
       getAccessToken,
     }),
-    [user, loading]
+    [user, loading],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -64,7 +63,7 @@ export function AuthProvider({ children }) {
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (ctx === undefined) {
-    throw new Error('useAuth must be used inside <AuthProvider>');
+    throw new Error("useAuth must be used inside <AuthProvider>");
   }
   return ctx;
 }

@@ -1,8 +1,15 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { useAuth } from './AuthContext';
-import { financialProfileService } from '../services/financialProfileService';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { useAuth } from "./AuthContext";
+import { financialProfileService } from "../services/financialProfileService";
 
-const STORAGE_KEY = 'finanzas_active_financial_profile_id';
+const STORAGE_KEY = "finanzas_active_financial_profile_id";
 
 const FinancialProfileContext = createContext(null);
 
@@ -27,7 +34,9 @@ export function FinancialProfileProvider({ children }) {
       return;
     }
     setLoading(true);
-    const { data, error: err } = await financialProfileService.listByUser(user.id);
+    const { data, error: err } = await financialProfileService.listByUser(
+      user.id,
+    );
     if (err) {
       setError(err.message);
       setProfiles([]);
@@ -44,7 +53,8 @@ export function FinancialProfileProvider({ children }) {
 
   useEffect(() => {
     if (!profiles.length) return;
-    const exists = activeProfileId && profiles.some((p) => p.id === activeProfileId);
+    const exists =
+      activeProfileId && profiles.some((p) => p.id === activeProfileId);
     if (!exists) {
       const first = profiles[0].id;
       setActiveProfileIdState(first);
@@ -64,7 +74,7 @@ export function FinancialProfileProvider({ children }) {
 
   const activeProfile = useMemo(
     () => profiles.find((p) => p.id === activeProfileId) ?? null,
-    [profiles, activeProfileId]
+    [profiles, activeProfileId],
   );
 
   const value = useMemo(
@@ -77,14 +87,29 @@ export function FinancialProfileProvider({ children }) {
       activeProfileId,
       setActiveProfileId,
     }),
-    [profiles, loading, error, fetchProfiles, activeProfile, activeProfileId, setActiveProfileId]
+    [
+      profiles,
+      loading,
+      error,
+      fetchProfiles,
+      activeProfile,
+      activeProfileId,
+      setActiveProfileId,
+    ],
   );
 
-  return <FinancialProfileContext.Provider value={value}>{children}</FinancialProfileContext.Provider>;
+  return (
+    <FinancialProfileContext.Provider value={value}>
+      {children}
+    </FinancialProfileContext.Provider>
+  );
 }
 
 export function useFinancialProfile() {
   const ctx = useContext(FinancialProfileContext);
-  if (!ctx) throw new Error('useFinancialProfile must be used within FinancialProfileProvider');
+  if (!ctx)
+    throw new Error(
+      "useFinancialProfile must be used within FinancialProfileProvider",
+    );
   return ctx;
 }

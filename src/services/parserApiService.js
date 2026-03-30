@@ -1,7 +1,7 @@
 const base = () => {
   const u = import.meta.env.VITE_PARSER_API_URL;
-  if (!u) return '';
-  return String(u).replace(/\/$/, '');
+  if (!u) return "";
+  return String(u).replace(/\/$/, "");
 };
 
 /**
@@ -21,22 +21,22 @@ export async function parseStatementFile({
 }) {
   const url = base();
   if (!url) {
-    throw new Error('VITE_PARSER_API_URL is not set');
+    throw new Error("VITE_PARSER_API_URL is not set");
   }
   const form = new FormData();
-  form.append('file', file);
-  form.append('bank', bank);
-  if (profileId) form.append('profile_id', profileId);
+  form.append("file", file);
+  form.append("bank", bank);
+  if (profileId) form.append("profile_id", profileId);
 
   const res = await fetch(`${url}/parse`, {
-    method: 'POST',
+    method: "POST",
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
     body: form,
   });
 
-  if (typeof onUploadComplete === 'function') {
+  if (typeof onUploadComplete === "function") {
     onUploadComplete();
   }
 
@@ -49,8 +49,9 @@ export async function parseStatementFile({
   }
 
   if (!res.ok) {
-    const msg = json.detail || json.message || res.statusText || 'Parse request failed';
-    throw new Error(typeof msg === 'string' ? msg : JSON.stringify(msg));
+    const msg =
+      json.detail || json.message || res.statusText || "Parse request failed";
+    throw new Error(typeof msg === "string" ? msg : JSON.stringify(msg));
   }
   return json;
 }
