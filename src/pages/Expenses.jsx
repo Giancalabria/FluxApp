@@ -229,21 +229,14 @@ export default function Expenses() {
                       key={id}
                       label={label}
                       size="small"
+                      variant={periodMode === id ? "filled" : "outlined"}
+                      color={periodMode === id ? "primary" : "default"}
                       onClick={() => {
                         setPeriodMode(id);
                         setPeriodOffset(0);
                       }}
                       sx={{
                         fontWeight: 600,
-                        bgcolor:
-                          periodMode === id ? "primary.main" : "transparent",
-                        color:
-                          periodMode === id
-                            ? "primary.contrastText"
-                            : "text.secondary",
-                        border: "1px solid",
-                        borderColor:
-                          periodMode === id ? "primary.main" : "divider",
                       }}
                     />
                   ))}

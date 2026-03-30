@@ -406,21 +406,35 @@ export default function Dashboard() {
                     key={m}
                     label={m === "week" ? "Semana" : "Mes"}
                     size="small"
+                    variant={periodMode === m ? "filled" : "outlined"}
+                    color={periodMode === m ? "primary" : "default"}
                     onClick={() => {
                       setPeriodMode(m);
                       setPeriodOffset(0);
                     }}
                     sx={{
                       fontWeight: 600,
-                      bgcolor:
-                        periodMode === m ? "primary.main" : "transparent",
-                      color:
-                        periodMode === m
-                          ? "primary.contrastText"
-                          : "text.secondary",
-                      border: "1px solid",
-                      borderColor:
-                        periodMode === m ? "primary.main" : "divider",
+                      ...(periodMode === m
+                        ? {
+                            bgcolor: "primary.main",
+                            color: "#ffffff",
+                            border: "1px solid",
+                            borderColor: "primary.main",
+                            "& .MuiChip-label": { color: "#ffffff" },
+                            "&:hover": {
+                              bgcolor: "primary.dark",
+                              color: "#ffffff",
+                            },
+                            "&.Mui-focusVisible": {
+                              bgcolor: "primary.main",
+                            },
+                          }
+                        : {
+                            color: "text.secondary",
+                            borderColor: "divider",
+                            bgcolor: "transparent",
+                            "&:hover": { bgcolor: "action.hover" },
+                          }),
                     }}
                   />
                 ))}
