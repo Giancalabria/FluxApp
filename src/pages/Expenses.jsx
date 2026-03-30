@@ -179,41 +179,40 @@ export default function Expenses() {
                       {a.name}
                     </MenuItem>
                   ))}
+                  <TextField
+                    select
+                    label="Categoría"
+                    size="small"
+                    value={categoryFilter}
+                    onChange={(e) => setCategoryFilter(e.target.value)}
+                    fullWidth
+                  >
+                    <MenuItem value="">Todas</MenuItem>
+                    {categories.map((c) => (
+                      <MenuItem key={c.id} value={c.id}>
+                        {c.name}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                  <TextField
+                    select
+                    label="Tipo de gasto"
+                    size="small"
+                    value={classificationFilter}
+                    onChange={(e) => setClassificationFilter(e.target.value)}
+                    fullWidth
+                  >
+                    <MenuItem value="">Todos</MenuItem>
+                    {EXPENSE_CLASS_OPTIONS.map((c) => (
+                      <MenuItem key={c.value} value={c.value}>
+                        {c.label}
+                      </MenuItem>
+                    ))}
+                    <MenuItem value="__none__">Sin tipo</MenuItem>
+                  </TextField>
                 </TextField>
               </Stack>
-              <TextField
-                select
-                label="Categoría"
-                size="small"
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                fullWidth
-              >
-                <MenuItem value="">Todas</MenuItem>
-                {categories.map((c) => (
-                  <MenuItem key={c.id} value={c.id}>
-                    {c.name}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <TextField
-                select
-                label="Tipo de gasto"
-                size="small"
-                value={classificationFilter}
-                onChange={(e) => setClassificationFilter(e.target.value)}
-                fullWidth
-              >
-                <MenuItem value="">Todos</MenuItem>
-                {EXPENSE_CLASS_OPTIONS.map((c) => (
-                  <MenuItem key={c.value} value={c.value}>
-                    {c.label}
-                  </MenuItem>
-                ))}
-                <MenuItem value="__none__">Sin tipo</MenuItem>
-              </TextField>
 
-              {/* Period filter */}
               <Stack
                 direction="row"
                 alignItems="center"
