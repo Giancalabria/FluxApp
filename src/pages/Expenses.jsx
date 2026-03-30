@@ -91,12 +91,9 @@ export default function Expenses() {
     return getMonthRange(periodOffset);
   }, [periodMode, periodOffset]);
 
-  const classificationQuery =
-    classificationFilter === "__none__"
-      ? { classificationIsNull: true }
-      : classificationFilter
-        ? { classification: classificationFilter }
-        : {};
+  const classificationQuery = classificationFilter
+    ? { classification: classificationFilter }
+    : {};
 
   const { transactions, loading, error, deleteTransaction, clearError } =
     useTransactions({
@@ -208,7 +205,6 @@ export default function Expenses() {
                         {c.label}
                       </MenuItem>
                     ))}
-                    <MenuItem value="__none__">Sin tipo</MenuItem>
                   </TextField>
                 </TextField>
               </Stack>
