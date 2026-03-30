@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -51,6 +52,7 @@ const emptyForm = {
 };
 
 export default function AddExpense() {
+  const navigate = useNavigate();
   const { user, getAccessToken } = useAuth();
   const { activeProfile } = useFinancialProfile();
   const profileId = activeProfile?.id;
@@ -81,6 +83,10 @@ export default function AddExpense() {
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
+    if (value === '__add_account__' || value === '__add_category__') {
+      navigate('/profile');
+      return;
+    }
     setForm((prev) => {
       if (name === 'category_id') {
         const cat = categories.find((c) => c.id === value);
@@ -174,6 +180,15 @@ export default function AddExpense() {
       setRowEdits([]);
       setFile(null);
     }
+  };
+
+  const handleImportAccountChange = (e) => {
+    const v = e.target.value;
+    if (v === '__add_account__') {
+      navigate('/profile');
+      return;
+    }
+    setImportAccountId(v);
   };
 
   const displayCurrencies = userCurrencies.length > 0
@@ -292,12 +307,15 @@ export default function AddExpense() {
                         label="Cuenta destino"
                         size="small"
                         value={importAccountId}
-                        onChange={(e) => setImportAccountId(e.target.value)}
+                        onChange={handleImportAccountChange}
                         sx={{ flex: 1 }}
                       >
                         {accounts.map((a) => (
                           <MenuItem key={a.id} value={a.id}>{a.name}</MenuItem>
                         ))}
+                        <MenuItem value="__add_account__" sx={{ fontWeight: 700 }}>
+                          + Agregar cuenta
+                        </MenuItem>
                       </TextField>
                       <TextField
                         select
@@ -367,6 +385,10 @@ export default function AddExpense() {
                                   value={rowEdits[i]?.category_id ?? ''}
                                   onChange={(e) => {
                                     const id = e.target.value;
+                                    if (id === '__add_category__') {
+                                      navigate('/profile');
+                                      return;
+                                    }
                                     setRowEdits((prev) => {
                                       const next = [...prev];
                                       const cur = { ...(next[i] || {}) };
@@ -381,6 +403,9 @@ export default function AddExpense() {
                                   {categories.map((c) => (
                                     <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
                                   ))}
+                                  <MenuItem value="__add_category__" sx={{ fontWeight: 700 }}>
+                                    + Agregar categoría
+                                  </MenuItem>
                                 </TextField>
                               </TableCell>
                               <TableCell sx={{ py: 0.5, minWidth: 120 }}>
@@ -467,6 +492,9 @@ export default function AddExpense() {
                 {accounts.map((a) => (
                   <MenuItem key={a.id} value={a.id}>{a.name}</MenuItem>
                 ))}
+                <MenuItem value="__add_account__" sx={{ fontWeight: 700 }}>
+                  + Agregar cuenta
+                </MenuItem>
               </TextField>
 
               <TextField
@@ -501,6 +529,9 @@ export default function AddExpense() {
                 {categories.map((c) => (
                   <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
                 ))}
+                <MenuItem value="__add_category__" sx={{ fontWeight: 700 }}>
+                  + Agregar categoría
+                </MenuItem>
               </TextField>
 
               <TextField

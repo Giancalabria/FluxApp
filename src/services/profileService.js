@@ -46,4 +46,21 @@ export const profileService = {
       .single();
     return { data, error };
   },
+
+  async setUsername(userId, username) {
+    const trimmed = String(username).trim();
+    if (trimmed.length < 2 || trimmed.length > 32) {
+      return { data: null, error: { message: 'El nombre debe tener entre 2 y 32 caracteres.' } };
+    }
+    if (!/^[a-zA-Z0-9_\-\s]+$/.test(trimmed)) {
+      return { data: null, error: { message: 'Solo letras, números, guiones y espacios.' } };
+    }
+    const now = new Date().toISOString();
+    const { data, error } = await supabase
+      .from('profiles')
+      .upsert({ user_id: userId, username: trimmed, updated_at: now }, { onConflict: 'user_id' })
+      .select()
+      .single();
+    return { data, error };
+  },
 };

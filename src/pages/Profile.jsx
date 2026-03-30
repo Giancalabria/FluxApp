@@ -28,10 +28,13 @@ import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../hooks/useProfile';
 import { useAccounts } from '../hooks/useAccounts';
+import { useCategories } from '../hooks/useCategories';
 import { useUserCurrencies } from '../hooks/useUserCurrencies';
 import { useCurrencies } from '../hooks/useCurrencies';
 import { useFinancialProfile } from '../context/FinancialProfileContext';
 import { accountService } from '../services/accountService';
+import { categoryService } from '../services/categoryService';
+import { EXPENSE_CLASS_OPTIONS } from '../constants';
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -41,6 +44,7 @@ export default function Profile() {
 
   const { profile, loading: profileLoading, updateUsername } = useProfile(user?.id);
   const { accounts, loading: accLoading, refetch: refetchAccounts } = useAccounts(profileId);
+  const { categories, loading: catLoading, refetch: refetchCategories } = useCategories(profileId);
   const { currencies: userCurrencies, loading: ucLoading, addCurrency, removeCurrency } = useUserCurrencies(user?.id);
   const { currencies: allCurrencies } = useCurrencies();
 
@@ -60,6 +64,15 @@ export default function Profile() {
 
   const [deleteAccountTarget, setDeleteAccountTarget] = useState(null);
   const [deletingAccount, setDeletingAccount] = useState(false);
+
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryClass, setNewCategoryClass] = useState('');
+  const [addCategoryOpen, setAddCategoryOpen] = useState(false);
+  const [addingCategory, setAddingCategory] = useState(false);
+  const [categoryError, setCategoryError] = useState('');
+
+  const [deleteCategoryTarget, setDeleteCategoryTarget] = useState(null);
+  const [deletingCategory, setDeletingCategory] = useState(false);
 
   const [signOutConfirm, setSignOutConfirm] = useState(false);
 
@@ -116,6 +129,37 @@ export default function Profile() {
     setDeletingAccount(false);
     setDeleteAccountTarget(null);
     await refetchAccounts();
+  };
+
+  const handleAddCategory = async () => {
+    const name = newCategoryName.trim();
+    if (!name) { setCategoryError('Ingresá un nombre.'); return; }
+    setAddingCategory(true);
+    const { error } = await categoryService.create({
+      name,
+      classification: newCategoryClass || null,
+      financial_profile_id: profileId,
+      user_id: user.id,
+    });
+    setAddingCategory(false);
+    if (error) {
+      setCategoryError(error.message || 'No se pudo crear la categoría.');
+    } else {
+      setAddCategoryOpen(false);
+      setNewCategoryName('');
+      setNewCategoryClass('');
+      setCategoryError('');
+      await refetchCategories();
+    }
+  };
+
+  const handleDeleteCategory = async () => {
+    if (!deleteCategoryTarget) return;
+    setDeletingCategory(true);
+    await categoryService.remove(deleteCategoryTarget.id);
+    setDeletingCategory(false);
+    setDeleteCategoryTarget(null);
+    await refetchCategories();
   };
 
   const handleSignOut = async () => {
@@ -265,6 +309,47 @@ export default function Profile() {
           </CardContent>
         </Card>
 
+        {/* Categories card */}
+        <Card sx={{ mb: 2 }}>
+          <CardContent sx={{ p: 2.5 }}>
+            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1.5 }}>
+              <Typography variant="subtitle1" fontWeight={700}>Mis categorías</Typography>
+              <IconButton
+                size="small"
+                onClick={() => setAddCategoryOpen(true)}
+                sx={{ bgcolor: 'primary.main', color: 'primary.contrastText', '&:hover': { bgcolor: 'primary.dark' }, width: 30, height: 30 }}
+              >
+                <AddRoundedIcon fontSize="small" />
+              </IconButton>
+            </Stack>
+            {catLoading ? (
+              <CircularProgress size={20} />
+            ) : categories.length === 0 ? (
+              <Typography variant="body2" color="text.disabled">Sin categorías. Creá una.</Typography>
+            ) : (
+              <List disablePadding>
+                {categories.map((c, idx) => (
+                  <Box key={c.id}>
+                    <ListItem disablePadding sx={{ py: 0.75 }}>
+                      <ListItemText
+                        primary={c.name}
+                        secondary={c.classification ? EXPENSE_CLASS_OPTIONS.find((o) => o.value === c.classification)?.label : undefined}
+                        primaryTypographyProps={{ fontWeight: 600 }}
+                      />
+                      <ListItemSecondaryAction>
+                        <IconButton edge="end" size="small" onClick={() => setDeleteCategoryTarget(c)}>
+                          <DeleteRoundedIcon fontSize="small" sx={{ color: 'error.light' }} />
+                        </IconButton>
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                    {idx < categories.length - 1 && <Divider />}
+                  </Box>
+                ))}
+              </List>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Sign out */}
         <Button
           variant="outlined"
@@ -327,6 +412,41 @@ export default function Profile() {
         </DialogActions>
       </Dialog>
 
+      {/* Add category dialog */}
+      <Dialog open={addCategoryOpen} onClose={() => setAddCategoryOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle>Nueva categoría</DialogTitle>
+        <DialogContent sx={{ pt: 1 }}>
+          {categoryError && <Alert severity="error" sx={{ mb: 1.5 }}>{categoryError}</Alert>}
+          <Stack spacing={1.5} sx={{ mt: 1 }}>
+            <TextField
+              label="Nombre (ej: Supermercado, Salud)"
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              fullWidth
+              autoFocus
+            />
+            <TextField
+              select
+              label="Tipo (opcional)"
+              value={newCategoryClass}
+              onChange={(e) => setNewCategoryClass(e.target.value)}
+              fullWidth
+            >
+              <MenuItem value=""><em>Sin tipo</em></MenuItem>
+              {EXPENSE_CLASS_OPTIONS.map((c) => (
+                <MenuItem key={c.value} value={c.value}>{c.label}</MenuItem>
+              ))}
+            </TextField>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => { setAddCategoryOpen(false); setCategoryError(''); }}>Cancelar</Button>
+          <Button variant="contained" onClick={handleAddCategory} disabled={addingCategory}>
+            {addingCategory ? <CircularProgress size={20} color="inherit" /> : 'Crear'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* Delete account confirm */}
       <Dialog open={!!deleteAccountTarget} onClose={() => setDeleteAccountTarget(null)} maxWidth="xs" fullWidth>
         <DialogTitle>Eliminar cuenta</DialogTitle>
@@ -339,6 +459,22 @@ export default function Profile() {
           <Button onClick={() => setDeleteAccountTarget(null)}>Cancelar</Button>
           <Button onClick={handleDeleteAccount} color="error" variant="contained" disabled={deletingAccount}>
             {deletingAccount ? <CircularProgress size={20} color="inherit" /> : 'Eliminar'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete category confirm */}
+      <Dialog open={!!deleteCategoryTarget} onClose={() => setDeleteCategoryTarget(null)} maxWidth="xs" fullWidth>
+        <DialogTitle>Eliminar categoría</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2">
+            ¿Eliminás la categoría &quot;{deleteCategoryTarget?.name}&quot;? Los gastos asociados no se eliminarán pero quedarán sin categoría.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteCategoryTarget(null)}>Cancelar</Button>
+          <Button onClick={handleDeleteCategory} color="error" variant="contained" disabled={deletingCategory}>
+            {deletingCategory ? <CircularProgress size={20} color="inherit" /> : 'Eliminar'}
           </Button>
         </DialogActions>
       </Dialog>

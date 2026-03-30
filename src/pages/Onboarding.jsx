@@ -17,6 +17,7 @@ import { useAuth } from '../context/AuthContext';
 import { financialProfileService } from '../services/financialProfileService';
 import { categoryService } from '../services/categoryService';
 import { userCurrencyService } from '../services/userCurrencyService';
+import { profileService } from '../services/profileService';
 import { useFinancialProfile } from '../context/FinancialProfileContext';
 import { useCurrencies } from '../hooks/useCurrencies';
 
@@ -64,6 +65,13 @@ export default function Onboarding() {
     if (cErr) {
       setSaving(false);
       setError(cErr.message || 'El perfil se creó pero no se pudieron cargar las categorías.');
+      return;
+    }
+
+    const { error: nameErr } = await profileService.setUsername(user.id, name.trim());
+    if (nameErr) {
+      setSaving(false);
+      setError(nameErr.message || 'El perfil se creó pero no se pudo guardar tu nombre.');
       return;
     }
 
