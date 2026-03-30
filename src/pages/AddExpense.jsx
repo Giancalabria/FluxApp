@@ -22,6 +22,7 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Chip,
 } from '@mui/material';
 import EditNoteRoundedIcon from '@mui/icons-material/EditNoteRounded';
 import UploadFileRoundedIcon from '@mui/icons-material/UploadFileRounded';
@@ -32,7 +33,6 @@ import { useCategories } from '../hooks/useCategories';
 import { useTransactions } from '../hooks/useTransactions';
 import { useUserCurrencies } from '../hooks/useUserCurrencies';
 import { parseStatementFile } from '../services/parserApiService';
-import { bankImportService } from '../services/bankImportService';
 import { BANK_IMPORT_OPTIONS, EXPENSE_CLASS_OPTIONS } from '../constants';
 import { formatCurrency, formatDate } from '../lib/formatters';
 
@@ -133,18 +133,6 @@ export default function AddExpense() {
       const json = await parseStatementFile({ file, bank, profileId, accessToken: token });
       setParsed(json);
       setRowEdits((json.rows || []).map(() => ({ category_id: '', classification: '' })));
-      if (user?.id && profileId) {
-        await bankImportService.create({
-          user_id: user.id,
-          financial_profile_id: profileId,
-          bank_code: bank,
-          file_type: json.file_type || file.name.split('.').pop()?.toLowerCase() || 'pdf',
-          status: 'parsed',
-          parser_version: 'api',
-          result_json: json,
-          finished_at: new Date().toISOString(),
-        });
-      }
     } catch (e) {
       setImportError(e.message || 'Error al parsear');
     } finally {
