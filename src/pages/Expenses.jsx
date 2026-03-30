@@ -76,17 +76,27 @@ export default function Expenses() {
   const [currencyFilter, setCurrencyFilter] = useState("");
   const [accountFilter, setAccountFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
-  const [periodMode, setPeriodMode] = useState("month");
+  const [classificationFilter, setClassificationFilter] = useState("");
+  const [periodMode, setPeriodMode] = useState("month"); // 'week' | 'month' | 'all'
   const [periodOffset, setPeriodOffset] = useState(0);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const range = useMemo(
-    () =>
-      periodMode === "week"
-        ? getWeekRange(periodOffset)
-        : getMonthRange(periodOffset),
-    [periodMode, periodOffset],
-  );
+  const range = useMemo(() => {
+    if (periodMode === "all") {
+      return { from: null, to: null, label: "Todas las fechas" };
+    }
+    if (periodMode === "week") {
+      return getWeekRange(periodOffset);
+    }
+    return getMonthRange(periodOffset);
+  }, [periodMode, periodOffset]);
+
+  const classificationQuery =
+    classificationFilter === "__none__"
+      ? { classificationIsNull: true }
+      : classificationFilter
+        ? { classification: classificationFilter }
+        : {};
 
   const { transactions, loading, error, deleteTransaction, clearError } =
     useTransactions({
@@ -94,8 +104,9 @@ export default function Expenses() {
       currencyCode: currencyFilter || undefined,
       accountId: accountFilter || undefined,
       categoryId: categoryFilter || undefined,
-      dateFrom: range.from,
-      dateTo: range.to,
+      dateFrom: range.from ?? undefined,
+      dateTo: range.to ?? undefined,
+      ...classificationQuery,
     });
 
   const handleDelete = async () => {
@@ -185,6 +196,22 @@ export default function Expenses() {
                   </MenuItem>
                 ))}
               </TextField>
+              <TextField
+                select
+                label="Tipo de gasto"
+                size="small"
+                value={classificationFilter}
+                onChange={(e) => setClassificationFilter(e.target.value)}
+                fullWidth
+              >
+                <MenuItem value="">Todos</MenuItem>
+                {EXPENSE_CLASS_OPTIONS.map((c) => (
+                  <MenuItem key={c.value} value={c.value}>
+                    {c.label}
+                  </MenuItem>
+                ))}
+                <MenuItem value="__none__">Sin tipo</MenuItem>
+              </TextField>
 
               {/* Period filter */}
               <Stack
@@ -192,27 +219,31 @@ export default function Expenses() {
                 alignItems="center"
                 justifyContent="space-between"
               >
-                <Stack direction="row" spacing={0.5}>
-                  {["week", "month"].map((m) => (
+                <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
+                  {[
+                    { id: "week", label: "Semana" },
+                    { id: "month", label: "Mes" },
+                    { id: "all", label: "Todo" },
+                  ].map(({ id, label }) => (
                     <Chip
-                      key={m}
-                      label={m === "week" ? "Semana" : "Mes"}
+                      key={id}
+                      label={label}
                       size="small"
                       onClick={() => {
-                        setPeriodMode(m);
+                        setPeriodMode(id);
                         setPeriodOffset(0);
                       }}
                       sx={{
                         fontWeight: 600,
                         bgcolor:
-                          periodMode === m ? "primary.main" : "transparent",
+                          periodMode === id ? "primary.main" : "transparent",
                         color:
-                          periodMode === m
+                          periodMode === id
                             ? "primary.contrastText"
                             : "text.secondary",
                         border: "1px solid",
                         borderColor:
-                          periodMode === m ? "primary.main" : "divider",
+                          periodMode === id ? "primary.main" : "divider",
                       }}
                     />
                   ))}
@@ -221,6 +252,7 @@ export default function Expenses() {
                   <IconButton
                     size="small"
                     onClick={() => setPeriodOffset((p) => p - 1)}
+                    disabled={periodMode === "all"}
                   >
                     <ArrowBackIosNewRoundedIcon
                       fontSize="small"
@@ -237,13 +269,13 @@ export default function Expenses() {
                   <IconButton
                     size="small"
                     onClick={() => setPeriodOffset((p) => p + 1)}
-                    disabled={periodOffset >= 0}
+                    disabled={periodMode === "all" || periodOffset >= 0}
                   >
                     <ArrowForwardIosRoundedIcon
                       fontSize="small"
                       sx={{
                         color:
-                          periodOffset >= 0
+                          periodOffset >= 0 || periodMode === "all"
                             ? "action.disabled"
                             : "text.secondary",
                       }}
@@ -264,7 +296,9 @@ export default function Expenses() {
           <Card>
             <CardContent sx={{ textAlign: "center", py: 4 }}>
               <Typography variant="body1" color="text.secondary">
-                Sin gastos en este período
+                {periodMode === "all"
+                  ? "Sin gastos registrados"
+                  : "Sin gastos en este período"}
               </Typography>
               <Button
                 variant="contained"

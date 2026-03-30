@@ -36,7 +36,7 @@ import { useAccounts } from "../hooks/useAccounts";
 import { useProfile } from "../hooks/useProfile";
 import { useUserCurrencies } from "../hooks/useUserCurrencies";
 import { useCurrencies } from "../hooks/useCurrencies";
-import { CHART_PALETTE } from "../constants";
+import { CHART_PALETTE, EXPENSE_CLASS_OPTIONS } from "../constants";
 import { formatCurrency } from "../lib/formatters";
 
 function getWeekRange(offset = 0) {
@@ -173,6 +173,24 @@ export default function Dashboard() {
     });
     return Array.from(map.entries()).map(([name, value]) => ({ name, value }));
   }, [transactions, accountMap]);
+
+  const byClassification = useMemo(() => {
+    const map = new Map();
+    transactions.forEach((t) => {
+      const raw = t.classification ?? t.category?.classification ?? null;
+      const label = raw
+        ? (EXPENSE_CLASS_OPTIONS.find((o) => o.value === raw)?.label ?? raw)
+        : "Sin tipo";
+      map.set(label, (map.get(label) ?? 0) + Number(t.amount || 0));
+    });
+    return Array.from(map.entries()).map(([name, value]) => ({ name, value }));
+  }, [transactions]);
+
+  const legendBelowChartStyle = {
+    fontSize: "0.75rem",
+    paddingTop: 20,
+    marginTop: 12,
+  };
 
   const availableToAdd = allCurrencies.filter(
     (c) => !userCurrencies.some((uc) => uc.currency_code === c.code),
@@ -318,9 +336,18 @@ export default function Dashboard() {
                 </Box>
               ) : (
                 <Typography
-                  variant="h3"
+                  component="div"
                   fontWeight={800}
-                  sx={{ mt: 0.5, mb: 2, color: "#F2EFE9" }}
+                  sx={{
+                    mt: 0.5,
+                    mb: 2,
+                    color: "#F2EFE9",
+                    fontSize: "clamp(1.15rem, 4.2vw, 1.65rem)",
+                    lineHeight: 1.25,
+                    wordBreak: "break-word",
+                    overflowWrap: "anywhere",
+                    maxWidth: "100%",
+                  }}
                 >
                   {activeCurrency
                     ? formatCurrency(totalSpent, activeCurrency)
@@ -474,6 +501,15 @@ export default function Dashboard() {
               <Typography variant="subtitle1" fontWeight={700} gutterBottom>
                 Gastos por categoría
               </Typography>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                display="block"
+                sx={{ mb: 1.5 }}
+              >
+                Los colores del gráfico coinciden con las entradas de la leyenda
+                debajo.
+              </Typography>
               <ResponsiveContainer width="100%" height={220}>
                 <PieChart>
                   <Pie
@@ -497,7 +533,7 @@ export default function Dashboard() {
                   <Legend
                     iconType="circle"
                     iconSize={8}
-                    wrapperStyle={{ fontSize: "0.75rem" }}
+                    wrapperStyle={legendBelowChartStyle}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -506,10 +542,19 @@ export default function Dashboard() {
         )}
 
         {!loading && byAccount.length > 0 && (
-          <Card sx={{ mt: 2, mb: 2 }}>
+          <Card sx={{ mt: 2 }}>
             <CardContent sx={{ pb: "16px !important" }}>
               <Typography variant="subtitle1" fontWeight={700} gutterBottom>
                 Gastos por cuenta
+              </Typography>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                display="block"
+                sx={{ mb: 1.5 }}
+              >
+                Mismo esquema de colores: cada segmento y su etiqueta en la
+                leyenda.
               </Typography>
               <ResponsiveContainer width="100%" height={220}>
                 <PieChart>
@@ -534,7 +579,53 @@ export default function Dashboard() {
                   <Legend
                     iconType="circle"
                     iconSize={8}
-                    wrapperStyle={{ fontSize: "0.75rem" }}
+                    wrapperStyle={legendBelowChartStyle}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
+
+        {!loading && byClassification.length > 0 && (
+          <Card sx={{ mt: 2, mb: 2 }}>
+            <CardContent sx={{ pb: "16px !important" }}>
+              <Typography variant="subtitle1" fontWeight={700} gutterBottom>
+                Gastos por tipo
+              </Typography>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                display="block"
+                sx={{ mb: 1.5 }}
+              >
+                Fijo, variable y esencial según cómo clasificaste cada gasto; la
+                leyenda indica el color de cada tipo.
+              </Typography>
+              <ResponsiveContainer width="100%" height={220}>
+                <PieChart>
+                  <Pie
+                    data={byClassification}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={55}
+                    outerRadius={85}
+                    paddingAngle={2}
+                  >
+                    {byClassification.map((_, i) => (
+                      <Cell
+                        key={i}
+                        fill={CHART_PALETTE[(i + 5) % CHART_PALETTE.length]}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CUSTOM_TOOLTIP />} />
+                  <Legend
+                    iconType="circle"
+                    iconSize={8}
+                    wrapperStyle={legendBelowChartStyle}
                   />
                 </PieChart>
               </ResponsiveContainer>

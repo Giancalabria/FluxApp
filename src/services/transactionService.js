@@ -24,6 +24,11 @@ export const transactionService = {
     if (filters.currencyCode)
       query = query.eq("currency_code", filters.currencyCode);
     if (filters.categoryId) query = query.eq("category_id", filters.categoryId);
+    if (filters.classificationIsNull) {
+      query = query.is("classification", null);
+    } else if (filters.classification) {
+      query = query.eq("classification", filters.classification);
+    }
 
     const rawFrom = filters.dateFrom && String(filters.dateFrom).trim();
     const rawTo = filters.dateTo && String(filters.dateTo).trim();

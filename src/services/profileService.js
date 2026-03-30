@@ -38,10 +38,13 @@ export const profileService = {
         error: { message: "El nombre debe tener entre 2 y 32 caracteres." },
       };
     }
-    if (!/^[a-zA-Z0-9_\-\s]+$/.test(trimmed)) {
+    if (!/^[\p{L}\p{N}\s\-_]+$/u.test(trimmed)) {
       return {
         data: null,
-        error: { message: "Solo letras, números, guiones y espacios." },
+        error: {
+          message:
+            "Usá letras (incluye tildes y ñ), números, espacios, guiones o guión bajo.",
+        },
       };
     }
     const { data, error } = await supabase
@@ -61,10 +64,13 @@ export const profileService = {
         error: { message: "El nombre debe tener entre 2 y 32 caracteres." },
       };
     }
-    if (!/^[a-zA-Z0-9_\-\s]+$/.test(trimmed)) {
+    if (!/^[\p{L}\p{N}\s\-_]+$/u.test(trimmed)) {
       return {
         data: null,
-        error: { message: "Solo letras, números, guiones y espacios." },
+        error: {
+          message:
+            "Usá letras (incluye tildes y ñ), números, espacios, guiones o guión bajo.",
+        },
       };
     }
     const now = new Date().toISOString();

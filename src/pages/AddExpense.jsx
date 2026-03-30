@@ -24,6 +24,7 @@ import {
   TableRow,
   Paper,
   Chip,
+  Checkbox,
 } from "@mui/material";
 import EditNoteRoundedIcon from "@mui/icons-material/EditNoteRounded";
 import UploadFileRoundedIcon from "@mui/icons-material/UploadFileRounded";
@@ -73,6 +74,7 @@ export default function AddExpense() {
   const [manualSuccess, setManualSuccess] = useState(false);
   const [addAccountOpen, setAddAccountOpen] = useState(false);
   const [addCategoryOpen, setAddCategoryOpen] = useState(false);
+  const [importSuccessMessage, setImportSuccessMessage] = useState("");
 
   // Import — global state that survives navigation
   const {
@@ -96,6 +98,8 @@ export default function AddExpense() {
     setImportDone,
     importExpanded,
     setImportExpanded,
+    importSelectedIndices,
+    setImportSelectedIndices,
     startParse,
   } = useImport();
 
@@ -206,11 +210,55 @@ export default function AddExpense() {
     if (error) {
       setImportError(error.message || "Error al importar");
     } else {
+      const dates = [
+        ...new Set(rows.map((r) => r.date).filter(Boolean)),
+      ].sort();
+      const d0 = dates[0];
+      const d1 = dates[dates.length - 1];
+      let detail = `Se guardaron ${rows.length} gasto(s).`;
+      if (d0 && d1) {
+        detail +=
+          d0 === d1
+            ? ` Fecha: ${formatDate(d0)}.`
+            : ` Del ${formatDate(d0)} al ${formatDate(d1)}.`;
+      }
+      detail +=
+        " En Mis Gastos elegí “Todo” en el período si no los ves en el mes actual.";
+      setImportSuccessMessage(detail);
       setImportDone(true);
+      setImportSelectedIndices([]);
       setParsed(null);
       setRowEdits([]);
       setFile(null);
     }
+  };
+
+  const toggleImportRowSelected = (index) => {
+    setImportSelectedIndices((prev) =>
+      prev.includes(index) ? prev.filter((x) => x !== index) : [...prev, index],
+    );
+  };
+
+  const toggleSelectAllImportRows = () => {
+    const n = parsed?.rows?.length ?? 0;
+    if (n === 0) return;
+    setImportSelectedIndices((prev) =>
+      prev.length === n ? [] : Array.from({ length: n }, (_, i) => i),
+    );
+  };
+
+  const deleteSelectedImportRows = () => {
+    if (!parsed?.rows?.length || !importSelectedIndices.length) return;
+    const toRemove = new Set(importSelectedIndices);
+    const newRows = parsed.rows.filter((_, i) => !toRemove.has(i));
+    const newEdits = rowEdits.filter((_, i) => !toRemove.has(i));
+    if (newRows.length === 0) {
+      setParsed(null);
+    } else {
+      setParsed({ ...parsed, rows: newRows });
+    }
+    setRowEdits(newEdits);
+    setImportSelectedIndices([]);
   };
 
   const handleImportAccountChange = (e) => {
@@ -347,9 +395,12 @@ export default function AddExpense() {
                 {importDone && (
                   <Alert
                     severity="success"
-                    onClose={() => setImportDone(false)}
+                    onClose={() => {
+                      setImportDone(false);
+                      setImportSuccessMessage("");
+                    }}
                   >
-                    ¡Importación exitosa!
+                    {importSuccessMessage || "¡Importación exitosa!"}
                   </Alert>
                 )}
 
@@ -425,9 +476,29 @@ export default function AddExpense() {
 
                 {parsed && (
                   <>
-                    <Typography variant="subtitle2" fontWeight={600}>
-                      Vista previa ({parsed.rows?.length ?? 0} filas)
-                    </Typography>
+                    <Stack
+                      direction={{ xs: "column", sm: "row" }}
+                      spacing={1}
+                      alignItems={{ sm: "center" }}
+                      justifyContent="space-between"
+                    >
+                      <Typography variant="subtitle2" fontWeight={600}>
+                        Vista previa ({parsed.rows?.length ?? 0} filas)
+                      </Typography>
+                      <Button
+                        size="small"
+                        color="error"
+                        variant="outlined"
+                        disabled={importSelectedIndices.length === 0}
+                        onClick={deleteSelectedImportRows}
+                        sx={{
+                          borderRadius: 2,
+                          alignSelf: { xs: "stretch", sm: "auto" },
+                        }}
+                      >
+                        Eliminar seleccionadas ({importSelectedIndices.length})
+                      </Button>
+                    </Stack>
                     <Stack
                       direction={{ xs: "column", sm: "row" }}
                       spacing={1.5}
@@ -494,6 +565,25 @@ export default function AddExpense() {
                       <Table size="small" stickyHeader>
                         <TableHead>
                           <TableRow>
+                            <TableCell padding="checkbox" sx={{ width: 48 }}>
+                              <Checkbox
+                                size="small"
+                                indeterminate={
+                                  importSelectedIndices.length > 0 &&
+                                  importSelectedIndices.length <
+                                    (parsed.rows?.length ?? 0)
+                                }
+                                checked={
+                                  (parsed.rows?.length ?? 0) > 0 &&
+                                  importSelectedIndices.length ===
+                                    (parsed.rows?.length ?? 0)
+                                }
+                                onChange={toggleSelectAllImportRows}
+                                inputProps={{
+                                  "aria-label": "Seleccionar todas las filas",
+                                }}
+                              />
+                            </TableCell>
                             <TableCell>Fecha</TableCell>
                             <TableCell>Descripción</TableCell>
                             <TableCell align="right">Monto</TableCell>
@@ -516,6 +606,16 @@ export default function AddExpense() {
                                     : {}
                                 }
                               >
+                                <TableCell padding="checkbox">
+                                  <Checkbox
+                                    size="small"
+                                    checked={importSelectedIndices.includes(i)}
+                                    onChange={() => toggleImportRowSelected(i)}
+                                    inputProps={{
+                                      "aria-label": `Seleccionar fila ${i + 1}`,
+                                    }}
+                                  />
+                                </TableCell>
                                 <TableCell sx={{ whiteSpace: "nowrap" }}>
                                   {formatDate(r.date)}
                                 </TableCell>

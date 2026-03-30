@@ -22,6 +22,8 @@ export function ImportProvider({ children }) {
   const [importError, setImportError] = useState("");
   const [importDone, setImportDone] = useState(false);
   const [importExpanded, setImportExpanded] = useState(false);
+  /** Indices of rows selected in the import preview (for bulk delete). */
+  const [importSelectedIndices, setImportSelectedIndices] = useState([]);
 
   const parseIdRef = useRef(0);
 
@@ -33,6 +35,7 @@ export function ImportProvider({ children }) {
       setImportDone(false);
       setParsed(null);
       setRowEdits([]);
+      setImportSelectedIndices([]);
       setImportBusy(true);
       setImportStatus("uploading");
 
@@ -81,6 +84,7 @@ export function ImportProvider({ children }) {
     setImportStatus(null);
     setImportError("");
     setImportDone(false);
+    setImportSelectedIndices([]);
   }, []);
 
   const value = useMemo(
@@ -105,6 +109,8 @@ export function ImportProvider({ children }) {
       setImportDone,
       importExpanded,
       setImportExpanded,
+      importSelectedIndices,
+      setImportSelectedIndices,
       startParse,
       reset,
     }),
@@ -120,6 +126,7 @@ export function ImportProvider({ children }) {
       importError,
       importDone,
       importExpanded,
+      importSelectedIndices,
       startParse,
       reset,
     ],
