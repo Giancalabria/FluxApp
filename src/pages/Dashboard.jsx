@@ -36,7 +36,7 @@ import { useAccounts } from "../hooks/useAccounts";
 import { useProfile } from "../hooks/useProfile";
 import { useUserCurrencies } from "../hooks/useUserCurrencies";
 import { useCurrencies } from "../hooks/useCurrencies";
-import { CHART_PALETTE, EXPENSE_CLASS_OPTIONS } from "../constants";
+import { EXPENSE_CLASS_OPTIONS, getChartColors } from "../constants";
 import { formatCurrency } from "../lib/formatters";
 
 function getWeekRange(offset = 0) {
@@ -186,11 +186,30 @@ export default function Dashboard() {
     return Array.from(map.entries()).map(([name, value]) => ({ name, value }));
   }, [transactions]);
 
+  const categoryChartColors = useMemo(
+    () => getChartColors(byCategory.length, { rotation: 0 }),
+    [byCategory.length],
+  );
+  const accountChartColors = useMemo(
+    () => getChartColors(byAccount.length, { rotation: 9 }),
+    [byAccount.length],
+  );
+  const classificationChartColors = useMemo(
+    () => getChartColors(byClassification.length, { rotation: 18 }),
+    [byClassification.length],
+  );
+
   const legendBelowChartStyle = {
-    fontSize: "0.75rem",
-    paddingTop: 20,
-    marginTop: 12,
+    fontSize: "0.68rem",
+    paddingTop: 2,
+    marginTop: 4,
+    lineHeight: "1.35",
   };
+
+  const chartCardContentSx = { px: 1.5, pt: 1.5, pb: 1 };
+  const chartHeight = 320;
+  const pieOuterRadius = 100;
+  const pieInnerRadius = 64;
 
   const availableToAdd = allCurrencies.filter(
     (c) => !userCurrencies.some((uc) => uc.currency_code === c.code),
@@ -511,7 +530,7 @@ export default function Dashboard() {
 
         {!loading && byCategory.length > 0 && (
           <Card sx={{ mt: 2 }}>
-            <CardContent sx={{ pb: "16px !important" }}>
+            <CardContent sx={chartCardContentSx}>
               <Typography variant="subtitle1" fontWeight={700} gutterBottom>
                 Gastos por categoría
               </Typography>
@@ -519,34 +538,33 @@ export default function Dashboard() {
                 variant="caption"
                 color="text.secondary"
                 display="block"
-                sx={{ mb: 1.5 }}
+                sx={{ mb: 0.75, lineHeight: 1.35 }}
               >
-                Los colores del gráfico coinciden con las entradas de la leyenda
-                debajo.
+                Cada categoría tiene un color distinto (leyenda abajo).
               </Typography>
-              <ResponsiveContainer width="100%" height={220}>
-                <PieChart>
+              <ResponsiveContainer width="100%" height={chartHeight}>
+                <PieChart margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
                   <Pie
                     data={byCategory}
                     dataKey="value"
                     nameKey="name"
                     cx="50%"
-                    cy="50%"
-                    innerRadius={55}
-                    outerRadius={85}
+                    cy="48%"
+                    innerRadius={pieInnerRadius}
+                    outerRadius={pieOuterRadius}
                     paddingAngle={2}
                   >
                     {byCategory.map((_, i) => (
                       <Cell
                         key={i}
-                        fill={CHART_PALETTE[i % CHART_PALETTE.length]}
+                        fill={categoryChartColors[i] ?? "#2C5F2D"}
                       />
                     ))}
                   </Pie>
                   <Tooltip content={<CUSTOM_TOOLTIP />} />
                   <Legend
                     iconType="circle"
-                    iconSize={8}
+                    iconSize={7}
                     wrapperStyle={legendBelowChartStyle}
                   />
                 </PieChart>
@@ -557,7 +575,7 @@ export default function Dashboard() {
 
         {!loading && byAccount.length > 0 && (
           <Card sx={{ mt: 2 }}>
-            <CardContent sx={{ pb: "16px !important" }}>
+            <CardContent sx={chartCardContentSx}>
               <Typography variant="subtitle1" fontWeight={700} gutterBottom>
                 Gastos por cuenta
               </Typography>
@@ -565,34 +583,33 @@ export default function Dashboard() {
                 variant="caption"
                 color="text.secondary"
                 display="block"
-                sx={{ mb: 1.5 }}
+                sx={{ mb: 0.75, lineHeight: 1.35 }}
               >
-                Mismo esquema de colores: cada segmento y su etiqueta en la
-                leyenda.
+                Colores distintos por cuenta; la leyenda coincide con el gráfico.
               </Typography>
-              <ResponsiveContainer width="100%" height={220}>
-                <PieChart>
+              <ResponsiveContainer width="100%" height={chartHeight}>
+                <PieChart margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
                   <Pie
                     data={byAccount}
                     dataKey="value"
                     nameKey="name"
                     cx="50%"
-                    cy="50%"
-                    innerRadius={55}
-                    outerRadius={85}
+                    cy="48%"
+                    innerRadius={pieInnerRadius}
+                    outerRadius={pieOuterRadius}
                     paddingAngle={2}
                   >
                     {byAccount.map((_, i) => (
                       <Cell
                         key={i}
-                        fill={CHART_PALETTE[(i + 3) % CHART_PALETTE.length]}
+                        fill={accountChartColors[i] ?? "#2C5F2D"}
                       />
                     ))}
                   </Pie>
                   <Tooltip content={<CUSTOM_TOOLTIP />} />
                   <Legend
                     iconType="circle"
-                    iconSize={8}
+                    iconSize={7}
                     wrapperStyle={legendBelowChartStyle}
                   />
                 </PieChart>
@@ -603,7 +620,7 @@ export default function Dashboard() {
 
         {!loading && byClassification.length > 0 && (
           <Card sx={{ mt: 2, mb: 2 }}>
-            <CardContent sx={{ pb: "16px !important" }}>
+            <CardContent sx={chartCardContentSx}>
               <Typography variant="subtitle1" fontWeight={700} gutterBottom>
                 Gastos por tipo
               </Typography>
@@ -611,34 +628,33 @@ export default function Dashboard() {
                 variant="caption"
                 color="text.secondary"
                 display="block"
-                sx={{ mb: 1.5 }}
+                sx={{ mb: 0.75, lineHeight: 1.35 }}
               >
-                Fijo, variable y esencial según cómo clasificaste cada gasto; la
-                leyenda indica el color de cada tipo.
+                Fijo, variable y esencial; un color por tipo en leyenda y gráfico.
               </Typography>
-              <ResponsiveContainer width="100%" height={220}>
-                <PieChart>
+              <ResponsiveContainer width="100%" height={chartHeight}>
+                <PieChart margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
                   <Pie
                     data={byClassification}
                     dataKey="value"
                     nameKey="name"
                     cx="50%"
-                    cy="50%"
-                    innerRadius={55}
-                    outerRadius={85}
+                    cy="48%"
+                    innerRadius={pieInnerRadius}
+                    outerRadius={pieOuterRadius}
                     paddingAngle={2}
                   >
                     {byClassification.map((_, i) => (
                       <Cell
                         key={i}
-                        fill={CHART_PALETTE[(i + 5) % CHART_PALETTE.length]}
+                        fill={classificationChartColors[i] ?? "#2C5F2D"}
                       />
                     ))}
                   </Pie>
                   <Tooltip content={<CUSTOM_TOOLTIP />} />
                   <Legend
                     iconType="circle"
-                    iconSize={8}
+                    iconSize={7}
                     wrapperStyle={legendBelowChartStyle}
                   />
                 </PieChart>

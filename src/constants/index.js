@@ -57,13 +57,9 @@ export const DEFAULT_CATEGORIES = [
   { name: "Otros", classification: "variable" },
 ];
 
-export const CHART_PALETTE = [
-  "#2C5F2D",
-  "#97BC62",
-  "#D97964",
-  "#4A7C4B",
-  "#A8C877",
-  "#3D6B3E",
-  "#F59E0B",
-  "#6366F1",
-];
+export {
+  CHART_COLOR_ANCHORS,
+  getChartColors,
+  /** @deprecated Prefer getChartColors(n) for distinct slice colors. */
+  CHART_COLOR_ANCHORS as CHART_PALETTE,
+} from "../lib/chartPalette";

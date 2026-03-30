@@ -1,14 +1,5 @@
 import { createTheme } from "@mui/material/styles";
 
-export const CHART_PALETTE = [
-  "#2C5F2D",
-  "#97BC62",
-  "#D97964",
-  "#4A7C4B",
-  "#A8C877",
-  "#3D6B3E",
-];
-
 const theme = createTheme({
   palette: {
     mode: "light",
