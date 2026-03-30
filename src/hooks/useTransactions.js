@@ -24,6 +24,7 @@ export function useTransactions(filters = {}) {
       setTransactions(data ?? []);
     }
     setLoading(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [financialProfileId, JSON.stringify(rest)]);
 
   useEffect(() => {

@@ -6,6 +6,15 @@ export const bankImportService = {
     return { data, error };
   },
 
+  async listByProfile(financialProfileId) {
+    const { data, error } = await supabase
+      .from('bank_imports')
+      .select('*')
+      .eq('financial_profile_id', financialProfileId)
+      .order('created_at', { ascending: false });
+    return { data: data ?? [], error };
+  },
+
   async update(id, updates) {
     const { data, error } = await supabase
       .from('bank_imports')
@@ -14,15 +23,5 @@ export const bankImportService = {
       .select()
       .single();
     return { data, error };
-  },
-
-  async listForProfile(financialProfileId, limit = 20) {
-    const { data, error } = await supabase
-      .from('bank_imports')
-      .select('*')
-      .eq('financial_profile_id', financialProfileId)
-      .order('created_at', { ascending: false })
-      .limit(limit);
-    return { data: data ?? [], error };
   },
 };

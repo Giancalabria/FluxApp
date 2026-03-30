@@ -1,24 +1,22 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Paper, BottomNavigation, BottomNavigationAction } from '@mui/material';
-import DashboardIcon from '@mui/icons-material/DashboardRounded';
-import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWalletRounded';
-import SwapHorizIcon from '@mui/icons-material/SwapHorizRounded';
-import BarChartIcon from '@mui/icons-material/BarChartRounded';
-import GroupIcon from '@mui/icons-material/GroupsRounded';
+import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
+import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
+import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
+import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
 
 const NAV_ITEMS = [
-  { path: '/dashboard', label: 'Home', icon: <DashboardIcon /> },
-  { path: '/accounts', label: 'Accounts', icon: <AccountBalanceWalletIcon /> },
-  { path: '/transactions', label: 'Moves', icon: <SwapHorizIcon /> },
-  { path: '/activities', label: 'Split', icon: <GroupIcon /> },
-  { path: '/reports', label: 'Reports', icon: <BarChartIcon /> },
+  { path: '/dashboard', label: 'Inicio', icon: <HomeRoundedIcon /> },
+  { path: '/expenses', label: 'Gastos', icon: <ReceiptLongRoundedIcon /> },
+  { path: '/add', label: 'Cargar', icon: <AddCircleRoundedIcon /> },
+  { path: '/profile', label: 'Perfil', icon: <PersonRoundedIcon /> },
 ];
 
 export default function BottomNav() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
-  const currentIndex = NAV_ITEMS.findIndex((item) => pathname.startsWith(item.path));
+  const currentIndex = NAV_ITEMS.findIndex((item) => pathname === item.path || pathname.startsWith(item.path + '/'));
 
   return (
     <Paper
@@ -28,29 +26,14 @@ export default function BottomNav() {
         left: 0,
         right: 0,
         zIndex: (t) => t.zIndex.appBar,
-        borderTop: '1px solid',
-        borderColor: 'divider',
+        borderTop: 'none',
         pb: 'env(safe-area-inset-bottom, 0px)',
       }}
-      elevation={8}
+      elevation={0}
     >
       <BottomNavigation
-        value={currentIndex}
+        value={currentIndex === -1 ? false : currentIndex}
         onChange={(_, newValue) => navigate(NAV_ITEMS[newValue].path)}
-        sx={{
-          bgcolor: 'background.paper',
-          height: 60,
-          '& .MuiBottomNavigationAction-root': {
-            minWidth: 'auto',
-            py: 1,
-            '& .MuiBottomNavigationAction-label': {
-              fontSize: '0.65rem',
-              '&.Mui-selected': {
-                fontSize: '0.7rem',
-              },
-            },
-          },
-        }}
       >
         {NAV_ITEMS.map(({ label, icon }) => (
           <BottomNavigationAction key={label} label={label} icon={icon} />

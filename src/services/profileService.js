@@ -20,13 +20,23 @@ export const profileService = {
     return { data, error };
   },
 
+  async update(id, updates) {
+    const { data, error } = await supabase
+      .from('profiles')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+    return { data, error };
+  },
+
   async updateUsername(userId, username) {
     const trimmed = String(username).trim();
     if (trimmed.length < 2 || trimmed.length > 32) {
-      return { data: null, error: { message: 'Username must be 2–32 characters.' } };
+      return { data: null, error: { message: 'El nombre debe tener entre 2 y 32 caracteres.' } };
     }
-    if (!/^[a-zA-Z0-9_-]+$/.test(trimmed)) {
-      return { data: null, error: { message: 'Username can only contain letters, numbers, underscore and hyphen.' } };
+    if (!/^[a-zA-Z0-9_\-\s]+$/.test(trimmed)) {
+      return { data: null, error: { message: 'Solo letras, números, guiones y espacios.' } };
     }
     const { data, error } = await supabase
       .from('profiles')

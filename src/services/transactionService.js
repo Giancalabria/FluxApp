@@ -8,15 +8,17 @@ export const transactionService = {
       .from('transactions')
       .select(`
         *,
-        account:accounts!account_id(name, currency_code),
+        account:accounts!account_id(name),
         category:categories!category_id(name, classification)
       `)
+      .eq('type', 'expense')
       .order('date', { ascending: false });
 
     if (filters.financialProfileId) query = query.eq('financial_profile_id', filters.financialProfileId);
     if (filters.accountId) query = query.eq('account_id', filters.accountId);
     if (filters.accountIds?.length) query = query.in('account_id', filters.accountIds);
-    if (filters.type) query = query.eq('type', filters.type);
+    if (filters.currencyCode) query = query.eq('currency_code', filters.currencyCode);
+    if (filters.categoryId) query = query.eq('category_id', filters.categoryId);
 
     const rawFrom = filters.dateFrom && String(filters.dateFrom).trim();
     const rawTo = filters.dateTo && String(filters.dateTo).trim();
@@ -30,23 +32,15 @@ export const transactionService = {
   },
 
   async create(tx) {
-    const { data, error } = await supabase.from('transactions').insert(tx).select().single();
+    const row = { ...tx, type: 'expense' };
+    const { data, error } = await supabase.from('transactions').insert(row).select().single();
     return { data, error };
   },
 
   async createMany(rows) {
     if (!rows?.length) return { data: [], error: null };
-    const { data, error } = await supabase.from('transactions').insert(rows).select();
-    return { data, error };
-  },
-
-  async update(id, updates) {
-    const { data, error } = await supabase
-      .from('transactions')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
+    const tagged = rows.map((r) => ({ ...r, type: 'expense' }));
+    const { data, error } = await supabase.from('transactions').insert(tagged).select();
     return { data, error };
   },
 

@@ -14,18 +14,12 @@ export function useProfile(userId) {
     }
     setLoading(true);
     const { data, error: err } = await profileService.getByUserId(userId);
-    if (err) {
-      if (err.code === 'PGRST116') {
-        const { data: created } = await profileService.create({
-          user_id: userId,
-          username: 'user_' + Math.random().toString(36).slice(2, 10),
-        });
-        setProfile(created);
-        setError(null);
-      } else {
-        setError(err.message);
-        setProfile(null);
-      }
+    if (err?.code === 'PGRST116') {
+      // No profile yet (new user hasn't onboarded)
+      setProfile(null);
+      setError(null);
+    } else if (err) {
+      setError(err.message);
     } else {
       setProfile(data);
       setError(null);
@@ -37,12 +31,11 @@ export function useProfile(userId) {
     fetch();
   }, [fetch]);
 
-  const updateUsername = useCallback(async (username) => {
-    if (!userId) return { data: null, error: { message: 'Not signed in.' } };
+  const updateUsername = async (username) => {
     const { data, error: err } = await profileService.updateUsername(userId, username);
-    if (!err) setProfile(data);
+    if (!err && data) setProfile(data);
     return { data, error: err };
-  }, [userId]);
+  };
 
   return { profile, loading, error, refetch: fetch, updateUsername };
 }

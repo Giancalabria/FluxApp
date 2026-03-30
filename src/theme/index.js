@@ -1,33 +1,35 @@
 import { createTheme } from '@mui/material/styles';
 
+export const CHART_PALETTE = ['#2C5F2D', '#97BC62', '#D97964', '#4A7C4B', '#A8C877', '#3D6B3E'];
+
 const theme = createTheme({
   palette: {
-    mode: 'dark',
+    mode: 'light',
     background: {
-      default: '#0F172A',
-      paper: '#1E293B',
+      default: '#F2EFE9',
+      paper: '#FFFFFF',
     },
     primary: {
-      main: '#38BDF8',
-      light: '#7DD3FC',
-      dark: '#0284C7',
-      contrastText: '#0F172A',
+      main: '#2C5F2D',
+      light: '#97BC62',
+      dark: '#1A3D1B',
+      contrastText: '#F2EFE9',
     },
     secondary: {
-      main: '#818CF8',
-      light: '#A5B4FC',
-      dark: '#6366F1',
-      contrastText: '#0F172A',
+      main: '#97BC62',
+      light: '#D4E8A8',
+      dark: '#4A7C4B',
+      contrastText: '#1A3D1B',
     },
     success: {
-      main: '#34D399',
-      light: '#6EE7B7',
-      dark: '#059669',
+      main: '#2C5F2D',
+      light: '#97BC62',
+      dark: '#1A3D1B',
     },
     error: {
-      main: '#F87171',
-      light: '#FCA5A5',
-      dark: '#DC2626',
+      main: '#D97964',
+      light: '#F0A090',
+      dark: '#B05A47',
     },
     warning: {
       main: '#FBBF24',
@@ -35,16 +37,16 @@ const theme = createTheme({
       dark: '#D97706',
     },
     info: {
-      main: '#38BDF8',
-      light: '#7DD3FC',
-      dark: '#0284C7',
+      main: '#4A7C4B',
+      light: '#97BC62',
+      dark: '#2C5F2D',
     },
     text: {
-      primary: '#E2E8F0',
-      secondary: '#94A3B8',
-      disabled: '#475569',
+      primary: '#1F2937',
+      secondary: '#6B7280',
+      disabled: '#9CA3AF',
     },
-    divider: 'rgba(148, 163, 184, 0.12)',
+    divider: 'rgba(31, 41, 55, 0.08)',
   },
   typography: {
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
@@ -61,6 +63,7 @@ const theme = createTheme({
       styleOverrides: {
         body: {
           minHeight: '100dvh',
+          backgroundColor: '#F2EFE9',
         },
         '#root': {
           minHeight: '100dvh',
@@ -74,7 +77,7 @@ const theme = createTheme({
         root: {
           textTransform: 'none',
           fontWeight: 600,
-          borderRadius: 10,
+          borderRadius: 12,
         },
       },
       defaultProps: {
@@ -85,8 +88,9 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           backgroundImage: 'none',
-          borderRadius: 16,
-          border: '1px solid rgba(148, 163, 184, 0.08)',
+          borderRadius: 20,
+          border: '1px solid rgba(31, 41, 55, 0.06)',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
         },
       },
     },
@@ -101,6 +105,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           textTransform: 'none',
+          borderRadius: 16,
         },
       },
     },
@@ -108,16 +113,15 @@ const theme = createTheme({
       styleOverrides: {
         paper: {
           borderRadius: 20,
-          backgroundColor: '#1E293B',
+          backgroundColor: '#FFFFFF',
           backgroundImage: 'none',
-          border: '1px solid rgba(148, 163, 184, 0.12)',
         },
       },
       defaultProps: {
         slotProps: {
           backdrop: {
             sx: {
-              backgroundColor: 'rgba(0, 0, 0, 0.75)',
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
               backdropFilter: 'blur(4px)',
             },
             invisible: false,
@@ -135,6 +139,41 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           fontWeight: 500,
+          borderRadius: 8,
+        },
+      },
+    },
+    MuiBottomNavigation: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#2C5F2D',
+          height: 64,
+        },
+      },
+    },
+    MuiBottomNavigationAction: {
+      styleOverrides: {
+        root: {
+          color: 'rgba(255,255,255,0.5)',
+          '&.Mui-selected': {
+            color: '#97BC62',
+          },
+          '& .MuiBottomNavigationAction-label': {
+            fontSize: '0.7rem',
+            fontWeight: 600,
+            '&.Mui-selected': {
+              fontSize: '0.72rem',
+            },
+          },
+        },
+      },
+    },
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#2C5F2D',
+          color: '#F2EFE9',
+          backgroundImage: 'none',
         },
       },
     },
