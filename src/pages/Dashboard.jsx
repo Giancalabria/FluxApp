@@ -296,7 +296,7 @@ export default function Dashboard() {
               bgcolor: "primary.main",
               color: "primary.contrastText",
               borderRadius: 3,
-              borderTopLeftRadius: userCurrencies[0] === activeCurrency ? 0 : 3,
+              borderTopLeftRadius: activeCurrencyIdx === 0 ? 0 : undefined,
               border: "none",
               boxShadow: "0 4px 20px rgba(44,95,45,0.25)",
             }}

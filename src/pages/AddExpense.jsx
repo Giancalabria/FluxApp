@@ -30,11 +30,11 @@ import EditNoteRoundedIcon from '@mui/icons-material/EditNoteRounded';
 import UploadFileRoundedIcon from '@mui/icons-material/UploadFileRounded';
 import { useAuth } from '../context/AuthContext';
 import { useFinancialProfile } from '../context/FinancialProfileContext';
+import { useImport } from '../context/ImportContext';
 import { useAccounts } from '../hooks/useAccounts';
 import { useCategories } from '../hooks/useCategories';
 import { useTransactions } from '../hooks/useTransactions';
 import { useUserCurrencies } from '../hooks/useUserCurrencies';
-import { parseStatementFile } from '../services/parserApiService';
 import { BANK_IMPORT_OPTIONS, EXPENSE_CLASS_OPTIONS } from '../constants';
 import { formatCurrency, formatDate } from '../lib/formatters';
 
@@ -63,26 +63,28 @@ export default function AddExpense() {
   const { currencies: userCurrencies } = useUserCurrencies(user?.id);
   const { createTransaction, createTransactions } = useTransactions({ financialProfileId: profileId });
 
-  // Manual form
+  // Manual form (local — only needed while the dialog is open)
   const [manualOpen, setManualOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [manualBusy, setManualBusy] = useState(false);
   const [manualError, setManualError] = useState('');
   const [manualSuccess, setManualSuccess] = useState(false);
 
-  // Import
-  const [importExpanded, setImportExpanded] = useState(false);
-  const [bank, setBank] = useState('generic');
-  const [file, setFile] = useState(null);
-  const [parsed, setParsed] = useState(null);
-  const [rowEdits, setRowEdits] = useState([]);
-  const [importAccountId, setImportAccountId] = useState('');
-  const [importCurrency, setImportCurrency] = useState('ARS');
-  const [importBusy, setImportBusy] = useState(false);
-  /** 'uploading' | 'processing' | null — only while parsing a file */
-  const [importStatus, setImportStatus] = useState(null);
-  const [importError, setImportError] = useState('');
-  const [importDone, setImportDone] = useState(false);
+  // Import — global state that survives navigation
+  const {
+    bank, setBank,
+    file, setFile,
+    parsed, setParsed,
+    rowEdits, setRowEdits,
+    importAccountId, setImportAccountId,
+    importCurrency, setImportCurrency,
+    importBusy,
+    importStatus,
+    importError, setImportError,
+    importDone, setImportDone,
+    importExpanded, setImportExpanded,
+    startParse,
+  } = useImport();
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
@@ -130,32 +132,13 @@ export default function AddExpense() {
   };
 
   const handleParse = async () => {
-    setImportError('');
-    setImportDone(false);
-    setParsed(null);
-    setRowEdits([]);
     if (!file) { setImportError('Elegí un archivo.'); return; }
     const token = await getAccessToken();
     if (!token) { setImportError('No autenticado.'); return; }
-    setImportBusy(true);
-    setImportStatus('uploading');
-    try {
-      const json = await parseStatementFile({
-        file,
-        bank,
-        profileId,
-        accessToken: token,
-        onUploadComplete: () => setImportStatus('processing'),
-      });
-      setParsed(json);
-      setRowEdits((json.rows || []).map(() => ({ category_id: '', classification: '' })));
-    } catch (e) {
-      setImportError(e.message || 'Error al parsear');
-    } finally {
-      setImportBusy(false);
-      setImportStatus(null);
-    }
+    startParse({ file, bank, profileId, accessToken: token });
   };
+
+  const [savingImport, setSavingImport] = useState(false);
 
   const handleImport = async () => {
     setImportError('');
@@ -165,7 +148,6 @@ export default function AddExpense() {
     if (missingCategory) { setImportError('Elegí una categoría para todas las filas.'); return; }
     const rows = parsed.rows.map((r, i) => {
       const edit = rowEdits[i] || {};
-      // Per-row currency wins over global parsed.currency, which wins over user selection
       const rowCurrency = r.currency || parsed.currency || importCurrency;
       return {
         user_id: user.id,
@@ -180,9 +162,9 @@ export default function AddExpense() {
         classification: edit.classification || null,
       };
     });
-    setImportBusy(true);
+    setSavingImport(true);
     const { error } = await createTransactions(rows);
-    setImportBusy(false);
+    setSavingImport(false);
     if (error) {
       setImportError(error.message || 'Error al importar');
     } else {
@@ -363,10 +345,10 @@ export default function AddExpense() {
                         variant="contained"
                         color="secondary"
                         onClick={handleImport}
-                        disabled={importBusy || !accounts.length}
+                        disabled={savingImport || !accounts.length}
                         sx={{ borderRadius: 2, color: '#1A3D1B', fontWeight: 700 }}
                       >
-                        {importBusy ? <CircularProgress size={20} color="inherit" /> : 'Cargar'}
+                        {savingImport ? <CircularProgress size={20} color="inherit" /> : 'Cargar'}
                       </Button>
                     </Stack>
 
