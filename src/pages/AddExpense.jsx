@@ -16,6 +16,7 @@ import {
   DialogContent,
   DialogActions,
   Collapse,
+  LinearProgress,
   Table,
   TableBody,
   TableCell,
@@ -78,6 +79,8 @@ export default function AddExpense() {
   const [importAccountId, setImportAccountId] = useState('');
   const [importCurrency, setImportCurrency] = useState('ARS');
   const [importBusy, setImportBusy] = useState(false);
+  /** 'uploading' | 'processing' | null — only while parsing a file */
+  const [importStatus, setImportStatus] = useState(null);
   const [importError, setImportError] = useState('');
   const [importDone, setImportDone] = useState(false);
 
@@ -135,14 +138,22 @@ export default function AddExpense() {
     const token = await getAccessToken();
     if (!token) { setImportError('No autenticado.'); return; }
     setImportBusy(true);
+    setImportStatus('uploading');
     try {
-      const json = await parseStatementFile({ file, bank, profileId, accessToken: token });
+      const json = await parseStatementFile({
+        file,
+        bank,
+        profileId,
+        accessToken: token,
+        onUploadComplete: () => setImportStatus('processing'),
+      });
       setParsed(json);
       setRowEdits((json.rows || []).map(() => ({ category_id: '', classification: '' })));
     } catch (e) {
       setImportError(e.message || 'Error al parsear');
     } finally {
       setImportBusy(false);
+      setImportStatus(null);
     }
   };
 
@@ -292,9 +303,28 @@ export default function AddExpense() {
                     disabled={importBusy || !file}
                     sx={{ borderRadius: 2 }}
                   >
-                    {importBusy && !parsed ? <CircularProgress size={20} color="inherit" /> : 'Parsear'}
+                    {importBusy && !parsed ? <CircularProgress size={20} color="inherit" /> : 'Procesar'}
                   </Button>
                 </Stack>
+
+                {importBusy && importStatus && (
+                  <Box
+                    sx={{
+                      p: 2,
+                      borderRadius: 2,
+                      bgcolor: 'background.paper',
+                      border: '1px solid',
+                      borderColor: 'divider',
+                    }}
+                  >
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                      {importStatus === 'uploading'
+                        ? 'Subiendo archivo…'
+                        : 'Procesando datos…'}
+                    </Typography>
+                    <LinearProgress />
+                  </Box>
+                )}
 
                 {parsed && (
                   <>
@@ -336,7 +366,7 @@ export default function AddExpense() {
                         disabled={importBusy || !accounts.length}
                         sx={{ borderRadius: 2, color: '#1A3D1B', fontWeight: 700 }}
                       >
-                        {importBusy ? <CircularProgress size={20} color="inherit" /> : 'Importar'}
+                        {importBusy ? <CircularProgress size={20} color="inherit" /> : 'Cargar'}
                       </Button>
                     </Stack>
 

@@ -4,7 +4,21 @@ const base = () => {
   return String(u).replace(/\/$/, '');
 };
 
-export async function parseStatementFile({ file, bank, profileId, accessToken }) {
+/**
+ * @param {object} opts
+ * @param {File} opts.file
+ * @param {string} opts.bank
+ * @param {string} [opts.profileId]
+ * @param {string} opts.accessToken
+ * @param {() => void} [opts.onUploadComplete] Called when HTTP response is received (before JSON parse).
+ */
+export async function parseStatementFile({
+  file,
+  bank,
+  profileId,
+  accessToken,
+  onUploadComplete,
+}) {
   const url = base();
   if (!url) {
     throw new Error('VITE_PARSER_API_URL is not set');
@@ -21,6 +35,10 @@ export async function parseStatementFile({ file, bank, profileId, accessToken })
     },
     body: form,
   });
+
+  if (typeof onUploadComplete === 'function') {
+    onUploadComplete();
+  }
 
   const text = await res.text();
   let json;

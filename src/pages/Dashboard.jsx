@@ -236,7 +236,7 @@ export default function Dashboard() {
             <Stack
               direction="row"
               spacing={0.5}
-              sx={{ overflowX: "auto", pl: 0.5, pb: 0 }}
+              sx={{ overflowX: "auto", pb: 0 }}
             >
               {userCurrencies.map((uc, idx) => {
                 const isActive = idx === activeCurrencyIdx;
@@ -296,7 +296,7 @@ export default function Dashboard() {
               bgcolor: "primary.main",
               color: "primary.contrastText",
               borderRadius: 3,
-              borderTopLeftRadius: 0,
+              borderTopLeftRadius: userCurrencies[0] === activeCurrency ? 0 : 3,
               border: "none",
               boxShadow: "0 4px 20px rgba(44,95,45,0.25)",
             }}

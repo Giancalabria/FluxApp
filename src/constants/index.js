@@ -21,6 +21,7 @@ export const EXPENSE_CLASS_OPTIONS = [
 /** Parser `bank` field; PDF parsers match your sample exports. */
 export const BANK_IMPORT_OPTIONS = [
   { value: 'generic', label: 'Genérico / desconocido' },
+  { value: 'mercadopago', label: 'Mercado Pago' },
   { value: 'patagonia', label: 'Banco Patagonia' },
   { value: 'macro', label: 'Banco Macro' },
   { value: 'santander', label: 'Santander Río' },
