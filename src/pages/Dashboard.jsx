@@ -176,11 +176,11 @@ export default function Dashboard() {
               spacing={1}
               sx={{
                 overflowX: 'auto',
-                px: 0.5,
-                py: 0.75,
+                px: 0.25,
+                py: 0.5,
                 bgcolor: 'transparent',
-                mb: -1, // overlap card like attached tabs
-                ml: -1,
+                mb: -1.5, // overlap card like attached tabs
+                ml: -0.5,
               }}
             >
               {userCurrencies.map((uc, idx) => (
@@ -193,17 +193,15 @@ export default function Dashboard() {
                     fontSize: '0.85rem',
                     height: 34,
                     borderRadius: 2,
-                    borderBottomLeftRadius: 0,
-                    borderBottomRightRadius: 0,
                     border: '1px solid',
-                    borderColor: idx === activeCurrencyIdx ? 'primary.main' : 'divider',
-                    bgcolor: idx === activeCurrencyIdx ? 'primary.main' : 'background.paper',
-                    color: idx === activeCurrencyIdx ? 'primary.contrastText' : 'text.primary',
-                    boxShadow: idx === activeCurrencyIdx ? '0 6px 18px rgba(44,95,45,0.18)' : 'none',
-                    zIndex: idx === activeCurrencyIdx ? 2 : 0,
-                    '& .MuiChip-label': { px: 1.25 },
+                    borderColor: 'transparent',
+                    bgcolor: idx === activeCurrencyIdx ? 'background.paper' : 'transparent',
+                    color: idx === activeCurrencyIdx ? 'text.primary' : 'text.secondary',
+                    boxShadow: idx === activeCurrencyIdx ? '0 10px 24px rgba(0,0,0,0.12)' : 'none',
+                    zIndex: idx === activeCurrencyIdx ? 2 : 1,
+                    '& .MuiChip-label': { px: 1.5 },
                     '&:hover': {
-                      bgcolor: idx === activeCurrencyIdx ? 'primary.dark' : 'action.hover',
+                      bgcolor: idx === activeCurrencyIdx ? 'background.paper' : 'action.hover',
                     },
                   }}
                 />
@@ -217,11 +215,9 @@ export default function Dashboard() {
                   fontWeight: 700,
                   height: 34,
                   borderRadius: 2,
-                  borderBottomLeftRadius: 0,
-                  borderBottomRightRadius: 0,
                   color: 'text.secondary',
                   borderColor: 'divider',
-                  bgcolor: 'background.paper',
+                  bgcolor: 'transparent',
                   '& .MuiChip-label': { px: 1.1 },
                   '&:hover': { bgcolor: 'action.hover' },
                 }}
@@ -233,9 +229,7 @@ export default function Dashboard() {
             sx={{
               bgcolor: 'primary.main',
               color: 'primary.contrastText',
-              borderRadius: 2,
-              borderTopLeftRadius: 2,
-              borderTopRightRadius: 2,
+              borderRadius: 3,
               border: 'none',
               boxShadow: '0 4px 20px rgba(44,95,45,0.25)',
             }}
